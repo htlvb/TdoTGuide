@@ -1,10 +1,8 @@
-﻿using FsCheck.Fluent;
-using Microsoft.AspNetCore.TestHost;
+﻿using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using TdoTGuide.WebAsm.Server.Data;
 using TdoTGuide.WebAsm.Server.IntegrationTests.Utils;
 using System.Net;
-using System.Net.Http.Json;
 
 namespace TdoTGuide.WebAsm.Server.IntegrationTests;
 

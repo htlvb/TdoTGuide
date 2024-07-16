@@ -2,7 +2,6 @@
 using FsCheck.Fluent;
 using TdoTGuide.WebAsm.Server.Data;
 using TdoTGuide.WebAsm.Shared;
-using System.Net.Mail;
 
 namespace TdoTGuide.WebAsm.Server.IntegrationTests;
 

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace TdoTGuide.WebAsm.Server.Data
@@ -18,19 +20,13 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         public async IAsyncEnumerable<ProjectOrganizer> GetOrganizerCandidates()
         {
-            var userPageRequest = graphServiceClient.Groups[organizerGroupId].Members.Request().Top(999);
-            while (userPageRequest != null)
+            var groupMembers = graphServiceClient.ReadAll<User, UserCollectionResponse>(
+                graphServiceClient.Groups[organizerGroupId].Members.GraphUser.GetAsync(v => v.QueryParameters.Top = 999)
+            );
+            await foreach (var user in groupMembers)
             {
-                var userPage = await userPageRequest.GetAsync();
-                var users = userPage
-                    .OfType<User>()
-                    .Select(v => new ProjectOrganizer(v.Id, v.GivenName, v.Surname, Regex.Replace(v.UserPrincipalName, "@.*$", "")));
-                foreach (var user in users)
-                {
-                    yield return user;
-                }
-
-                userPageRequest = userPage.NextPageRequest;
+                Debug.Assert(user.Id != null && user.GivenName != null && user.Surname != null && user.UserPrincipalName != null);
+                yield return new ProjectOrganizer(user.Id, user.GivenName, user.Surname, Regex.Replace(user.UserPrincipalName, "@.*$", ""));
             }
         }
     }

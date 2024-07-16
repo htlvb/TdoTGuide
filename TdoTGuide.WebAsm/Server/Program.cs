@@ -16,7 +16,17 @@ builder.Services.AddLocalization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
     .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddMicrosoftGraph(builder.Configuration.GetSection("GraphBeta"))
+    .AddMicrosoftGraph(opts =>
+    {
+        var section = builder.Configuration.GetSection("GraphBeta");
+        var scopes = section.GetSection("Scopes");
+        if (scopes != null)
+        {
+            // overwrite scopes instead of concatenating
+            opts.Scopes = [];
+        }
+        section.Bind(opts);
+    })
     .AddInMemoryTokenCaches();
 builder.Services.AddTdoTGuideControllers();
 builder.Services.AddRazorPages();
@@ -25,14 +35,14 @@ builder.Services.AddTdoTGuideAuthorizationRules();
 
 builder.Services.AddSingleton<IProjectStore>(provider =>
 {
-    string connectionString = builder.Configuration.GetConnectionString("Pgsql");
+    string connectionString = builder.Configuration.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql.");
     return new PgsqlProjectStore(connectionString);
 });
 
 builder.Services.AddScoped<IUserStore>(provider =>
 {
     return new UserStore(
-        builder.Configuration.GetSection("AppSettings")["OrganizerGroupId"],
+        builder.Configuration.GetSection("AppSettings")["OrganizerGroupId"] ?? throw new Exception("Can't find AppSettings\\OrganizerGroupId"),
         provider.GetRequiredService<GraphServiceClient>());
 });
 

@@ -16,7 +16,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().Cre
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration["ServerApiScope"]);
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration["ServerApiScope"] ?? throw new Exception("Can't find ServerApiScope config."));
 });
 
 await builder.Build().RunAsync();
