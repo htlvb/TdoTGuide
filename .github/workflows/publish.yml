@@ -1,0 +1,46 @@
+name: Publish
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/publish.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v4
+
+      - name: Initialize
+        run: ./init.sh
+        
+      - name: Build tailwind
+        run: ./build-tailwind.sh
+
+      - name: Run tests
+        run: dotnet test
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./TdoTGuide.WebAsm/Server/Dockerfile
+          push: true
+          tags: ghcr.io/htlvb/tdot-guide:${{ github.sha }}

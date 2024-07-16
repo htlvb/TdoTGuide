@@ -1,0 +1,115 @@
+﻿@using System.Text.Json;
+@using Markdig;
+@using Markdig.Extensions.AutoLinks;
+@inject HttpClient Http
+
+@if (Project != null)
+{
+    <div class="project border-l-2 border-gray-400 hover:border-blue-500 rounded shadow hover:shadow-blue-500">
+        <div class="flex flex-col divide-y md:divide-y-0 divide-x-0 md:divide-x md:flex-row w-full">
+            <div class="flex flex-col basis-1/5 shrink-0 p-2">
+                <span class="text-xl text-black pb-2">@Project.Title</span>
+                <span class="text-sm text-gray-600 pb-2">
+                    <strong>@Project.Organizer.DisplayName</strong>
+                    @foreach (var coOrganizer in Project.CoOrganizers)
+                    {
+                        <text>, @coOrganizer.DisplayName</text>
+                    }
+                </span>
+                <span class="text-sm text-gray-600 pb-2">
+                    @Project.Date.ToLongDateString() | @Project.StartTime @if (Project.EndTime.HasValue)
+                    {
+                        <text> - @Project.EndTime</text>
+                    }
+                </span>
+                <span class="text-sm text-gray-600 pb-2">@Project.Location</span>
+            </div>
+            <div class="description p-2 grow">
+                @ProjectDescription
+            </div>
+            <div class="flex flex-col basis-1/6 gap-2 p-2">
+                @if (Project.Links.Edit != null)
+                {
+                    <NavLink class="btn btn-blue" href=@Project.Links.Edit>Bearbeiten</NavLink>
+                }
+                @if (Project.Links.Delete != null)
+                {
+                    if (deletionState == ConfirmableActionState.None)
+                    {
+                        <button class="btn btn-red" onclick=@(() => MarkForDeletion())>Löschen</button>
+                    }
+                    else if (deletionState == ConfirmableActionState.IsPreparedToExecute)
+                    {
+                        <button class="btn btn-red-filled" onclick=@(() => Delete())>Wirklich löschen</button>
+                    }
+                    else if (deletionState == ConfirmableActionState.IsExecuting)
+                    {
+                        <button class="btn btn-red-filled" disabled>
+                            <span class="spinner spinner-white"></span>
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web) { Converters = { new DateOnlyJsonConverter(), new TimeOnlyJsonConverter() } };
+
+    [Parameter]
+    public ProjectDto? Project { get; set; }
+
+    public MarkupString ProjectDescription
+    {
+        get
+        {
+            if (Project == null)
+            {
+                return default;
+            }
+            var markdownPipeline = new MarkdownPipelineBuilder()
+                .DisableHtml()
+                .UseAutoLinks(new AutoLinkOptions { OpenInNewWindow = true })
+                .Build();
+            return (MarkupString)Markdown.ToHtml(Project.Description, markdownPipeline);
+        }
+    }
+
+    [Parameter]
+    public Action<ProjectDto, ProjectDto>? OnUpdate { get; set; }
+
+    [Parameter]
+    public Action? OnDelete { get; set; }
+
+    enum ConfirmableActionState
+    {
+        None,
+        IsPreparedToExecute,
+        IsExecuting
+    }
+
+    private ConfirmableActionState deletionState;
+
+    private void MarkForDeletion()
+    {
+        deletionState = ConfirmableActionState.IsPreparedToExecute;
+        StateHasChanged();
+    }
+
+    private async Task Delete()
+    {
+        deletionState = ConfirmableActionState.IsExecuting;
+        StateHasChanged();
+        try
+        {
+            var response = await Http.DeleteAsync(Project!.Links.Delete);
+            response.EnsureSuccessStatusCode();
+            OnDelete?.Invoke();
+        }
+        finally
+        {
+            deletionState = ConfirmableActionState.None;
+            StateHasChanged();
+        }
+    }
+}

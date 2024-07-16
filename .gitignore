@@ -1,0 +1,10 @@
+.vs/
+bin/
+obj/
+*.user
+.tools/
+/TdoTGuide.WebAsm/Client/wwwroot/css/app.min.css
+/TdoTGuide.WebAsm/Client/wwwroot/lib
+/TdoTGuide.Web/wwwroot/css/app.min.css
+/TdoTGuide.SampleDataGenerator/AttendeeCandidates.json
+/TdoTGuide.SampleDataGenerator/OrganizerCandidates.json
