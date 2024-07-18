@@ -16,9 +16,7 @@ public class ProjectEqualityComparer : IEqualityComparer<Project?>
             Equals(x.Location, y.Location) &&
             Equals(x.Organizer, y.Organizer) &&
             x.CoOrganizers.SequenceEqual(y.CoOrganizers) &&
-            Equals(x.Date, y.Date) &&
-            Equals(x.StartTime, y.StartTime) &&
-            Equals(x.EndTime, y.EndTime);
+            Equals(x.TimeSelection, y.TimeSelection);
     }
 
     public int GetHashCode([DisallowNull] Project obj)

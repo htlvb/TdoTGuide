@@ -75,11 +75,6 @@ public static class ServerConfigurationExtensions
     {
         return services
             .AddControllersWithViews()
-            .AddApplicationPart(Assembly.GetExecutingAssembly()) // for tests
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
-                options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
-            });
+            .AddApplicationPart(Assembly.GetExecutingAssembly()); // for tests
     }
 }

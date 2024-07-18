@@ -52,8 +52,8 @@ public class CreateProjectTests
             yield return new object[] { "Title is white-space", FakeData.EditingProjectDataDtoFaker.Generate() with { Title = " " } };
             yield return new object[] { "Unknown organizer", FakeData.EditingProjectDataDtoFaker.Generate() with { OrganizerId = "unknown-organizer" } };
             yield return new object[] { "Unknown co-organizer", FakeData.EditingProjectDataDtoFaker.Generate() with { CoOrganizerIds = new[] { "unknown-co-organizer" } } };
-            yield return new object[] { "Date is in the past", FakeData.EditingProjectDataDtoFaker.Generate() with { Date = DateOnly.FromDateTime(DateTime.Today).AddDays(-1) } };
-            yield return new object[] { "Start time and end time are invalid", FakeData.EditingProjectDataDtoFaker.Generate() with { StartTime = new TimeOnly(10, 0), EndTime = new TimeOnly(9, 59) } };
+            yield return new object[] { "Regular time interval is too small", FakeData.EditingProjectDataDtoFaker.Generate() with { TimeSelection = new TimeSelectionDto(TimeSelectionTypeDto.Regular, 0, []) } };
+            yield return new object[] { "Custom time list is empty", FakeData.EditingProjectDataDtoFaker.Generate() with { TimeSelection = new TimeSelectionDto(TimeSelectionTypeDto.Individual, 30, []) } };
         }
     }
 

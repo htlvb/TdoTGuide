@@ -7,7 +7,5 @@ CREATE TABLE project(
     location VARCHAR NOT NULL,
     organizer JSON NOT NULL,
     co_organizers JSON NOT NULL,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME
+    time_selection JSON NOT NULL
 );

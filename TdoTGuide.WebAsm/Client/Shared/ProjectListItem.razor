@@ -16,12 +16,25 @@
                         <text>, @coOrganizer.DisplayName</text>
                     }
                 </span>
-                <span class="text-sm text-gray-600 pb-2">
-                    @Project.Date.ToLongDateString() | @Project.StartTime @if (Project.EndTime.HasValue)
+                <div class="text-sm text-gray-600 pb-2">
+                    @if (Project.TimeSelection.Type == TimeSelectionTypeDto.Continuous)
                     {
-                        <text> - @Project.EndTime</text>
+                        <text>laufend</text>
                     }
-                </span>
+                    else if (Project.TimeSelection.Type == TimeSelectionTypeDto.Regular)
+                    {
+                        <text>regelmäßig alle @Project.TimeSelection.RegularIntervalMinutes Minuten</text>
+                    }
+                    else if (Project.TimeSelection.Type == TimeSelectionTypeDto.Individual)
+                    {
+                        <ul class="list-disc list-inside">
+                        @foreach (var time in Project.TimeSelection.IndividualTimes)
+                        {
+                            <li>@time.ToLongDateString() | @time.ToString("HH:mm")</li>
+                        }
+                        </ul>
+                    }
+                </div>
                 <span class="text-sm text-gray-600 pb-2">@Project.Location</span>
             </div>
             <div class="description p-2 grow">
@@ -54,7 +67,7 @@
     </div>
 }
 @code {
-    private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web) { Converters = { new DateOnlyJsonConverter(), new TimeOnlyJsonConverter() } };
+    private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
     [Parameter]
     public ProjectDto? Project { get; set; }

@@ -31,11 +31,9 @@ namespace TdoTGuide.WebAsm.Server.Controllers
         [Authorize("ListProjects")]
         public async Task<ProjectListDto> GetProjectList()
         {
-            var projects = (await projectStore.GetAll().ToList())
-                .GroupBy(v => v.Date).OrderBy(v => v.Key).SelectMany(v => v); // Sort by date, but don't change order of projects with same date;
 
             var projectDtos = new List<ProjectDto>();
-            foreach (var project in projects)
+            await foreach (var project in projectStore.GetAll())
             {
                 var projectDto = await GetProjectDtoFromProject(project);
                 projectDtos.Add(projectDto);
@@ -83,9 +81,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                         "",
                         UserId,
                         Array.Empty<string>(),
-                        DateOnly.FromDateTime(DateTime.Today.AddDays(14)),
-                        TimeOnly.FromTimeSpan(TimeSpan.FromHours(9)),
-                        TimeOnly.FromTimeSpan(TimeSpan.FromHours(13))
+                        new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
                     ),
                     organizerCandidates,
                     coOrganizerCandidates,
@@ -113,9 +109,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                         project.Location,
                         project.Organizer.Id,
                         project.CoOrganizers.Select(v => v.Id).ToArray(),
-                        project.Date,
-                        project.StartTime,
-                        project.EndTime
+                        project.TimeSelection.Accept(new TimeSelectionToDtoVisitor())
                     ),
                     organizerCandidates,
                     coOrganizerCandidates,
@@ -217,15 +211,31 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 project.Location,
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
-                project.Date,
-                project.StartTime,
-                project.EndTime,
+                project.TimeSelection.Accept(new TimeSelectionToDtoVisitor()),
                 getCurrentUserRole(project),
                 new ProjectLinksDto(
                     canUpdate ? $"projects/edit/{project.Id}" : default,
                     canDelete ? Url.Action(nameof(DeleteProject), new { projectId = project.Id }) : default
                 )
             );
+        }
+
+        private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>
+        {
+            public TimeSelectionDto VisitContinuousTimeSelection(ContinuousTimeSelection v)
+            {
+                return new(TimeSelectionTypeDto.Continuous, 30, []);
+            }
+
+            public TimeSelectionDto VisitRegularTimeSelection(RegularTimeSelection v)
+            {
+                return new TimeSelectionDto(TimeSelectionTypeDto.Regular, v.IntervalMinutes, []);
+            }
+
+            public TimeSelectionDto VisitIndividualTimeSelection(IndividualTimeSelection v)
+            {
+                return new(TimeSelectionTypeDto.Individual, 30, [.. v.Times]);
+            }
         }
     }
 }

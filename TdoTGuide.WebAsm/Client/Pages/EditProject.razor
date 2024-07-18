@@ -88,26 +88,35 @@ else if (editingProject.Links.Save != null)
         </div>
 
         <div class="input">
-            <label class="block">
-                <span class="input-label">Datum</span>
-                <InputDate @bind-Value=editingProject.Data.Date ParsingErrorMessage="Kein gültiges Datum." class="input-text" />
-            </label>
-        </div>
-
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Von</span>
-                <input type="time" @bind=editingProject.Data.StartTime ParsingErrorMessage="Keine gültige Startzeit." class="input-text" />
-            </label>
-        </div>
-
-        <div class="input">
-            <label class="block">
-                <span class="input-label">
-                    <InputCheckbox @bind-Value=editingProject.Data.HasEndTime /> Bis
-                </span>
-            </label>
-            <input type="time" @bind=editingProject.Data.EndTime ParsingErrorMessage="Keine gültige Endzeit" disabled=@(!editingProject.Data.HasEndTime) class="input-text" />
+            <span class="input-label block">Zeit</span>
+            <InputRadioGroup @bind-Value=editingProject.Data.TimeSelection.Type>
+                <label class="block">
+                    <InputRadio Value=TimeSelectionType.Continuous />
+                    <span class="text-sm">Laufend</span>
+                </label>
+                <div>
+                    <label>
+                        <InputRadio Value=TimeSelectionType.Regular />
+                        <span class="text-sm">Regelmäßig</span>
+                    </label>
+                    <span class="text-sm">alle <InputNumber @bind-Value=editingProject.Data.TimeSelection.RegularIntervalMinutes class="input-text !inline-block w-20" min="5" step="5" disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Regular) /> Minuten</span>
+                </div>
+                <div>
+                    <label>
+                        <InputRadio Value=TimeSelectionType.Individual />
+                        <span class="text-sm">Fixe Zeitpunkte</span>
+                    </label>
+                    <ul class="list-disc list-inside ml-6">
+                        @for (var i = 0; i < editingProject.Data.TimeSelection.IndividualTimes.Count; i++)
+                        {
+                            var index = i; @* Capture variable *@
+                            <li class="mt-2">
+                                <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:get=editingProject.Data.TimeSelection.IndividualTimes[index] @bind-Value:set=@(value => SetIndividualTime(index, value)) disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Individual) class="input-text !inline-block" />
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </InputRadioGroup>
         </div>
 
         <ValidationSummary />
@@ -136,7 +145,7 @@ else if (editingProject.Links.Save != null)
     private bool isSubmitting;
     private string? errorMessage;
 
-    private JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web) { Converters = { new DateOnlyJsonConverter(), new TimeOnlyJsonConverter() } };
+    private JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,6 +157,19 @@ else if (editingProject.Links.Save != null)
         catch (AccessTokenNotAvailableException exception)
         {
             exception.Redirect();
+        }
+    }
+
+    private void SetIndividualTime(int index, DateTime? value)
+    {
+        if (editingProject == null)
+        {
+            return;
+        }
+        editingProject.Data.TimeSelection.IndividualTimes[index] = value;
+        if (index == editingProject.Data.TimeSelection.IndividualTimes.Count - 1 && value != null)
+        {
+            editingProject.Data.TimeSelection.IndividualTimes.Add(null);
         }
     }
 
@@ -202,10 +224,8 @@ else if (editingProject.Links.Save != null)
         [Required(ErrorMessage = "Organisator muss ausgewählt werden.")]
         public string? OrganizerId { get; set; }
         public string[] CoOrganizerIds { get; set; } = Array.Empty<string>();
-        public DateTime Date { get; set; }
-        public DateTime StartTime { get; set; }
-        public bool HasEndTime { get; set; }
-        public DateTime EndTime { get; set; }
+        [CustomValidation(typeof(TimeSelection), nameof(EditProject.TimeSelection.Validate))]
+        public TimeSelection TimeSelection { get; set; } = new();
 
         public static EditingProjectData FromProjectData(EditingProjectDataDto projectData)
         {
@@ -216,10 +236,7 @@ else if (editingProject.Links.Save != null)
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
                 CoOrganizerIds = projectData.CoOrganizerIds.ToArray(),
-                Date = projectData.Date.ToDateTime(TimeOnly.MinValue),
-                StartTime = projectData.Date.ToDateTime(projectData.StartTime),
-                HasEndTime = projectData.EndTime != null,
-                EndTime = projectData.Date.ToDateTime(projectData.EndTime == null ? TimeOnly.MinValue : projectData.EndTime.Value),
+                TimeSelection = EditProject.TimeSelection.FromDto(projectData.TimeSelection),
             };
         }
 
@@ -231,10 +248,74 @@ else if (editingProject.Links.Save != null)
                 Location,
                 OrganizerId ?? throw new InvalidOperationException("Organizer is empty. Did you forget to validate?"),
                 CoOrganizerIds,
-                DateOnly.FromDateTime(Date),
-                TimeOnly.FromDateTime(StartTime),
-                (HasEndTime ? TimeOnly.FromDateTime(EndTime) : null)
+                TimeSelection.ToDto()
             );
         }
+    }
+
+    public class TimeSelection
+    {
+        public TimeSelectionType Type { get; set; } = TimeSelectionType.Continuous;
+        public int RegularIntervalMinutes { get; set; } = 30;
+        public List<DateTime?> IndividualTimes { get; set; } = [ null ];
+
+        public TimeSelectionDto ToDto()
+        {
+            return new(
+                Type switch {
+                    TimeSelectionType.Continuous => TimeSelectionTypeDto.Continuous,
+                    TimeSelectionType.Regular => TimeSelectionTypeDto.Regular,
+                    TimeSelectionType.Individual => TimeSelectionTypeDto.Individual,
+                    _ => TimeSelectionTypeDto.Continuous
+                },
+                RegularIntervalMinutes,
+                IndividualTimes.OfType<DateTime>().ToList()
+            );
+        }
+
+        public static TimeSelection FromDto(TimeSelectionDto timeSelection)
+        {
+            return new()
+            {
+                Type = timeSelection.Type switch {
+                    TimeSelectionTypeDto.Continuous => TimeSelectionType.Continuous,
+                    TimeSelectionTypeDto.Regular => TimeSelectionType.Regular,
+                    TimeSelectionTypeDto.Individual => TimeSelectionType.Individual,
+                    _ => TimeSelectionType.Continuous
+                },
+                RegularIntervalMinutes = timeSelection.RegularIntervalMinutes,
+                IndividualTimes = timeSelection.IndividualTimes.Select(v => (DateTime?)v).Append(null).ToList()
+            };
+        }
+
+        public static ValidationResult? Validate(TimeSelection value)
+        {
+            if (value.Type == TimeSelectionType.Regular)
+            {
+                if (value.RegularIntervalMinutes <= 0)
+                {
+                    return new ValidationResult("Zeitintervall muss positiv sein.");
+                }
+            }
+            else if (value.Type == TimeSelectionType.Individual)
+            {
+                if (!value.IndividualTimes.Where(v => v != null).Any())
+                {
+                    return new ValidationResult("Mindestens ein Zeitpunkt muss angegeben werden.");
+                }
+                if (value.IndividualTimes.Any(v => v < DateTime.Now))
+                {
+                    return new ValidationResult("Zeitpunkte dürfen nicht in der Vergangenheit sein.");
+                }
+            }
+            return null;
+        }
+    }
+
+    public enum TimeSelectionType
+    {
+        Continuous,
+        Regular,
+        Individual
     }
 }

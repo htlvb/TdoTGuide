@@ -10,9 +10,7 @@ namespace TdoTGuide.WebAsm.Server.Data
         string Location,
         ProjectOrganizer Organizer,
         IReadOnlyList<ProjectOrganizer> CoOrganizers,
-        DateOnly Date,
-        TimeOnly StartTime,
-        TimeOnly? EndTime
+        ITimeSelection TimeSelection
     )
     {
         public static bool TryCreateFromEditingProjectDataDto(
@@ -48,16 +46,35 @@ namespace TdoTGuide.WebAsm.Server.Data
             var coOrganizers = coOrganizerIds
                 .Select(v => organizerCandidates[v])
                 .ToList();
-            if (projectData.Date < DateOnly.FromDateTime(DateTime.Today))
+            ITimeSelection timeSelection;
+            if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Continuous)
             {
-                project = null;
-                errorMessage = "Project date must be in the future.";
-                return false;
+                timeSelection = new ContinuousTimeSelection();
             }
-            if (projectData.EndTime != null && projectData.StartTime > projectData.EndTime.Value)
+            else if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Regular)
+            {
+                if (projectData.TimeSelection.RegularIntervalMinutes <= 0 || projectData.TimeSelection.RegularIntervalMinutes % 5 != 0)
+                {
+                    project = null;
+                    errorMessage = "Regular time interval must be positive and divisible by 5.";
+                    return false;
+                }
+                timeSelection = new RegularTimeSelection(projectData.TimeSelection.RegularIntervalMinutes);
+            }
+            else if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Individual)
+            {
+                if (projectData.TimeSelection.IndividualTimes.Count == 0 || projectData.TimeSelection.IndividualTimes.Any(v => v < DateTime.Now))
+                {
+                    project = null;
+                    errorMessage = "At least one custom time must be provided and every time must be in the future.";
+                    return false;
+                }
+                timeSelection = new IndividualTimeSelection(projectData.TimeSelection.IndividualTimes);
+            }
+            else 
             {
                 project = null;
-                errorMessage = "Project start and end times are invalid.";
+                errorMessage = "Invalid time selection.";
                 return false;
             }
             project = new Project(
@@ -67,9 +84,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                 projectData.Location,
                 organizer,
                 coOrganizers,
-                projectData.Date,
-                projectData.StartTime,
-                projectData.EndTime
+                timeSelection
             );
             errorMessage = null;
             return true;

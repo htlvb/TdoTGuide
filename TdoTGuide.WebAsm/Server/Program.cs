@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
 using TdoTGuide.WebAsm.Server.Data;
 using System.Globalization;
-using GraphServiceClient = Microsoft.Graph.GraphServiceClient;
 
 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-AT");
 

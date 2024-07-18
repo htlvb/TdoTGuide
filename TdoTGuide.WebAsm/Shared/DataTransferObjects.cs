@@ -15,10 +15,21 @@ namespace TdoTGuide.WebAsm.Shared
         string Location,
         string OrganizerId,
         IReadOnlyList<string> CoOrganizerIds,
-        DateOnly Date,
-        TimeOnly StartTime,
-        TimeOnly? EndTime
+        TimeSelectionDto TimeSelection
     );
+
+    public record TimeSelectionDto(
+        TimeSelectionTypeDto Type,
+        int RegularIntervalMinutes,
+        List<DateTime> IndividualTimes
+    );
+
+    public enum TimeSelectionTypeDto
+    {
+        Continuous,
+        Regular,
+        Individual
+    }
 
     public record EditingProjectLinksDto(
         string? Save
@@ -39,9 +50,7 @@ namespace TdoTGuide.WebAsm.Shared
         string Location,
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,
-        DateOnly Date,
-        TimeOnly StartTime,
-        TimeOnly? EndTime,
+        TimeSelectionDto TimeSelection,
         UserRoleForProjectDto CurrentUserStatus,
         ProjectLinksDto Links
     )

@@ -79,7 +79,7 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, date, start_time, end_time FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, time_selection FROM project", dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -87,9 +87,9 @@ namespace TdoTGuide.WebAsm.Server.Data
             }
         }
 
-        private async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
+        private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, date, start_time, end_time FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
@@ -101,31 +101,27 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, location, organizer, co_organizers, date, start_time, end_time) VALUES (@id, @title, @description, @location, @organizer, @co_organizers, @date, @start_time, @end_time)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
-            cmd.Parameters.AddWithValue("date", project.Date);
-            cmd.Parameters.AddWithValue("start_time", project.StartTime);
-            cmd.Parameters.AddWithValue("end_time", (object?)project.EndTime ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("time_selection", NpgsqlDbType.Json, project.TimeSelection);
             await cmd.ExecuteNonQueryAsync();
         }
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, location=@location, organizer=@organizer, co_organizers=@co_organizers, date=@date, start_time=@start_time, end_time=@end_time WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
-            cmd.Parameters.AddWithValue("date", project.Date);
-            cmd.Parameters.AddWithValue("start_time", project.StartTime);
-            cmd.Parameters.AddWithValue("end_time", (object?)project.EndTime ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("time_selection", NpgsqlDbType.Json, project.TimeSelection);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -159,6 +155,63 @@ namespace TdoTGuide.WebAsm.Server.Data
             }
         }
 
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+        [JsonDerivedType(typeof(DbContinuousTimeSelection), typeDiscriminator: "continuous")]
+        [JsonDerivedType(typeof(DbRegularTimeSelection), typeDiscriminator: "regular")]
+        [JsonDerivedType(typeof(DbIndividualTimeSelection), typeDiscriminator: "individual")]
+        private abstract class DbTimeSelection
+        {
+            public abstract ITimeSelection ToDomain();
+
+            public static DbTimeSelection FromDomain(ITimeSelection timeSelection)
+            {
+                return timeSelection.Accept(new TimeSelectionToDbModelVisitor());
+            }
+
+            private class TimeSelectionToDbModelVisitor : ITimeSelectionVisitor<DbTimeSelection>
+            {
+                public DbTimeSelection VisitContinuousTimeSelection(ContinuousTimeSelection v)
+                {
+                    return new DbContinuousTimeSelection();
+                }
+
+                public DbTimeSelection VisitRegularTimeSelection(RegularTimeSelection v)
+                {
+                    return new DbRegularTimeSelection(v.IntervalMinutes);
+                }
+
+                public DbTimeSelection VisitIndividualTimeSelection(IndividualTimeSelection v)
+                {
+                    return new DbIndividualTimeSelection([.. v.Times]);
+                }
+            }
+        }
+        private class DbContinuousTimeSelection() : DbTimeSelection
+        {
+            public override ITimeSelection ToDomain()
+            {
+                return new ContinuousTimeSelection();
+            }
+        }
+        private class DbRegularTimeSelection(int intervalMinutes) : DbTimeSelection
+        {
+            [JsonPropertyName("interval_minutes")] public int IntervalMinutes { get; } = intervalMinutes;
+
+            public override ITimeSelection ToDomain()
+            {
+                return new RegularTimeSelection(IntervalMinutes);
+            }
+        }
+        private class DbIndividualTimeSelection(List<DateTime> times) : DbTimeSelection
+        {
+            [JsonPropertyName("times")] public List<DateTime> Times { get; } = times;
+
+            public override ITimeSelection ToDomain()
+            {
+                return new IndividualTimeSelection(Times);
+            }
+        }
+
         private record DbProject(
             Guid Id,
             string Title,
@@ -166,9 +219,7 @@ namespace TdoTGuide.WebAsm.Server.Data
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers,
-            DateTime Date,
-            TimeSpan StartTime,
-            TimeSpan? EndTime
+            DbTimeSelection TimeSelection
         )
         {
             public static DbProject FromReader(NpgsqlDataReader reader)
@@ -180,9 +231,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                     reader.GetString(3),
                     reader.GetFieldValue<DbProjectOrganizer>(4),
                     reader.GetFieldValue<DbProjectOrganizer[]>(5),
-                    reader.GetDateTime(6),
-                    reader.GetTimeSpan(7),
-                    reader.GetFieldValue<TimeSpan?>(8)
+                    reader.GetFieldValue<DbTimeSelection>(6)
                 );
             }
 
@@ -195,9 +244,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                     project.Location,
                     DbProjectOrganizer.FromDomain(project.Organizer),
                     project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList(),
-                    project.Date.ToDateTime(TimeOnly.MinValue),
-                    project.StartTime.ToTimeSpan(),
-                    project.EndTime?.ToTimeSpan()
+                    DbTimeSelection.FromDomain(project.TimeSelection)
                 );
             }
 
@@ -210,9 +257,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                     Location,
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList(),
-                    DateOnly.FromDateTime(Date),
-                    TimeOnly.FromTimeSpan(StartTime),
-                    EndTime != null ? TimeOnly.FromTimeSpan(EndTime.Value) : null
+                    TimeSelection.ToDomain()
                 );
             }
         }
