@@ -4,7 +4,11 @@ module.exports = {
     "./**/*.razor"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'main': '#f97316' // orange-500, see https://tailwindcss.com/docs/customizing-colors
+      },
+    },
   },
   plugins: [],
 }
