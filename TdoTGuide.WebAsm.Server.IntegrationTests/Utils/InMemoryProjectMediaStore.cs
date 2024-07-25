@@ -29,17 +29,17 @@ public class InMemoryProjectMediaStore : IProjectMediaStore
         }
     }
 
-    public async Task<Dictionary<string, List<string>>> GetAllMedia(IEnumerable<string> projectIds)
+    public async Task<Dictionary<string, List<ProjectMedia>>> GetAllMedia(IEnumerable<string> projectIds)
     {
         await Task.Yield();
-        Dictionary<string, List<string>> result = [];
+        Dictionary<string, List<ProjectMedia>> result = [];
         foreach (var projectId in projectIds)
         {
             if (!projectMedia.TryGetValue(projectId, out var list))
             {
                 list = [];
             }
-            result.Add(projectId, [.. list.Select(v => $"http://localhost/{projectId}/{v}")]);
+            result.Add(projectId, [.. list.Select(v => new ProjectMedia(ProjectMediaType.Image, $"http://localhost/{projectId}/{v}"))]);
         }
         return result;
     }
