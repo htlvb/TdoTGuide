@@ -1,2 +1,2 @@
 # TdoT Guide
-Manage projects for open house visitors.
+Web app for creating a personal tour on the open day.
