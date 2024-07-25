@@ -12,6 +12,8 @@ namespace TdoTGuide.WebAsm.Shared
     public record EditingProjectDataDto(
         string Title,
         string Description,
+        IReadOnlyList<string> MediaFileNames,
+        IReadOnlyList<string> MediaFileNamesToRemove,
         string Location,
         string OrganizerId,
         IReadOnlyList<string> CoOrganizerIds,
@@ -52,6 +54,7 @@ namespace TdoTGuide.WebAsm.Shared
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,
         TimeSelectionDto TimeSelection,
         UserRoleForProjectDto CurrentUserStatus,
+        List<ProjectMediaDto> Media,
         ProjectLinksDto Links
     )
     {
@@ -71,6 +74,14 @@ namespace TdoTGuide.WebAsm.Shared
         NotRelated,
         Organizer,
         CoOrganizer
+    }
+
+    public record ProjectMediaDto(ProjectMediaTypeDto Type, string Url);
+
+    public enum ProjectMediaTypeDto
+    {
+        Image,
+        Video
     }
 
     public record ProjectLinksDto(

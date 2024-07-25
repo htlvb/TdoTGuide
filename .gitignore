@@ -3,6 +3,7 @@ bin/
 obj/
 *.user
 .tools/
+/object-storage
 /TdoTGuide.WebAsm/Client/wwwroot/css/app.min.css
 /TdoTGuide.WebAsm/Client/wwwroot/lib
 /TdoTGuide.Web/wwwroot/css/app.min.css

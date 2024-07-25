@@ -1,7 +1,6 @@
 module.exports = {
   content: [
-    "./**/*.html",
-    "./**/*.razor"
+    "./TdoTGuide.WebAsm/**/*.{html,razor}"
   ],
   theme: {
     extend: {

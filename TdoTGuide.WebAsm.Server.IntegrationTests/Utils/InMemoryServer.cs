@@ -29,6 +29,7 @@ public static class InMemoryServer
                         services.AddTdoTGuideControllers();
                         services.AddSingleton<IUserStore>(new InMemoryUserStore(FakeData.ProjectOrganizers));
                         services.AddSingleton<IProjectStore, InMemoryProjectStore>();
+                        services.AddSingleton<IProjectMediaStore, InMemoryProjectMediaStore>();
                     })
                     .Configure(app =>
                     {

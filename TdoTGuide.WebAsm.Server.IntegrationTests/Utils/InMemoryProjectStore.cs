@@ -33,8 +33,14 @@ public class InMemoryProjectStore : IProjectStore
         projects.Add(project);
     }
 
-    public Task Update(Project project)
+    public async Task Update(Project project)
     {
-        throw new NotImplementedException();
+        await Task.Yield();
+        var index = projects.FindIndex(v => v.Id == project.Id);
+        if (index == -1)
+        {
+            throw new Exception("Project cannot be updated because it doesn't exist.");
+        }
+        projects[index] = project;
     }
 }

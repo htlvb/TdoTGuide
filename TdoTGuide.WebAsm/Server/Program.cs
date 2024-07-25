@@ -5,6 +5,7 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
 using TdoTGuide.WebAsm.Server.Data;
 using System.Globalization;
+using Minio;
 
 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-AT");
 
@@ -33,11 +34,23 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddTdoTGuideAuthorizationRules();
 
+builder.Services.AddMinio(minioClient => minioClient
+    .WithEndpoint(builder.Configuration.GetSection("Minio")["Endpoint"])
+    .WithSSL(false)
+    .WithCredentials(
+        builder.Configuration.GetSection("Minio")["AccessKey"],
+        builder.Configuration.GetSection("Minio")["SecretKey"]
+    )
+    .Build()
+);
+
 builder.Services.AddSingleton<IProjectStore>(provider =>
 {
     string connectionString = builder.Configuration.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql.");
     return new PgsqlProjectStore(connectionString);
 });
+
+builder.Services.AddSingleton<IProjectMediaStore, MinioProjectMediaStore>();
 
 builder.Services.AddScoped<IUserStore>(provider =>
 {

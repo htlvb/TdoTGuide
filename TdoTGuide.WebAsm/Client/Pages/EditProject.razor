@@ -4,19 +4,23 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Net.Http.Headers
+
+@implements IAsyncDisposable
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 <PageTitle>Projekt bearbeiten - HTLVB TdoT Guide</PageTitle>
 
 @if (ProjectId == null)
 {
-    <h2 class="text-2xl mb-4">Projekt anlegen</h2>
+    <h2 class="text-2xl">Projekt anlegen</h2>
 }
 else
 {
-    <h2 class="text-2xl mb-4">Projekt bearbeiten</h2>
+    <h2 class="text-2xl">Projekt bearbeiten</h2>
 }
 @if (editingProject == null)
 {
@@ -27,113 +31,128 @@ else if (editingProject.Links.Save != null)
     <EditForm Context="Edit" Model=@editingProject.Data OnValidSubmit=@ValidFormSubmitted>
         <DataAnnotationsValidator/>
 
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Titel</span>
-                <InputText @bind-Value=editingProject.Data.Title class="input-text w-96 max-w-full" />
-            </label>
-        </div>
+        <fieldset disabled=@isSubmitting>
+            <div class="input">
+                <label class="block">
+                    <span class="input-label">Titel</span>
+                    <InputText @bind-Value=editingProject.Data.Title class="input-text w-96 max-w-full" />
+                </label>
+            </div>
 
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Beschreibung</span>
-                <InputTextArea @bind-Value=editingProject.Data.Description class="input-text w-[32rem] max-w-full h-48" />
-            </label>
-            <ul class="list-disc list-inside text-xs">
-                <li>Verwende <span class="text-lg text-orange-500"># Überschriften</span> und <span class="text-orange-500">* Aufzählungen</span></li>
-                <li>Formatiere Text <span class="italic text-orange-500">*kursiv*</span> und <span class="font-bold text-orange-500">**fett**</span></li>
-                <li>Zwei Zeilenumbrüche hintereinander erzeugen einen neuen Absatz</li>
-            </ul>
-        </div>
+            <div class="input">
+                <label class="block">
+                    <span class="input-label">Beschreibung</span>
+                    <InputTextArea @bind-Value=editingProject.Data.Description class="input-text w-[32rem] max-w-full h-48" />
+                </label>
+                <ul class="list-disc list-inside text-xs">
+                    <li>Verwende <span class="text-lg text-orange-500"># Überschriften</span> und <span class="text-orange-500">* Aufzählungen</span></li>
+                    <li>Formatiere Text <span class="italic text-orange-500">*kursiv*</span> und <span class="font-bold text-orange-500">**fett**</span></li>
+                    <li>Zwei Zeilenumbrüche hintereinander erzeugen einen neuen Absatz</li>
+                </ul>
+            </div>
 
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Ort</span>
-                <InputText @bind-Value=editingProject.Data.Location class="input-text w-96 max-w-full" />
-            </label>
-        </div>
+            <div class="input">
+                <span class="input-label block">Multimedia-Dateien</span>
+                <div class="flex flex-col items-start gap-2 mt-2">
+                    <InputFile id="new-media" @ref=newMediaElement OnChange="SetMedia" accept="image/jpeg,image/png,video/mp4" multiple class="input-text !inline-block" />
+                    @for (int i = editingProject.Data.ExistingMedia.Count - 1; i >= 0; i--)
+                    {
+                        var index = i; @* Capture variable *@
+                        var style = editingProject.Data.ExistingMedia[i].Remove ? "btn line-through opacity-50" : "btn";
+                        <a class="@style" @onclick=@(() => MarkMediaForRemoval(index))>@editingProject.Data.ExistingMedia[i].Name <i class="text-red-700 fa-solid fa-xmark"></i></a>
+                    }
+                </div>
+            </div>
+
+            <div class="input">
+                <label class="block">
+                    <span class="input-label">Ort</span>
+                    <InputText @bind-Value=editingProject.Data.Location class="input-text w-96 max-w-full" />
+                </label>
+            </div>
     
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Organisator</span>
-                @if (editingProject.OrganizerCandidates.Count == 1)
-                {
-                    <text>
-                        @editingProject.OrganizerCandidates.FirstOrDefault(v => v.Id == editingProject.Data.OrganizerId)?.DisplayName
-                    </text>
-                }
-                else
-                {
-                    <InputSelect @bind-Value=editingProject.Data.OrganizerId class="input-select">
-                    @foreach (var person in editingProject.OrganizerCandidates)
+            <div class="input">
+                <label class="block">
+                    <span class="input-label">Organisator</span>
+                    @if (editingProject.OrganizerCandidates.Count == 1)
+                    {
+                        <text>
+                            @editingProject.OrganizerCandidates.FirstOrDefault(v => v.Id == editingProject.Data.OrganizerId)?.DisplayName
+                        </text>
+                    }
+                    else
+                    {
+                        <InputSelect @bind-Value=editingProject.Data.OrganizerId class="input-select">
+                        @foreach (var person in editingProject.OrganizerCandidates)
+                        {
+                            <option value=@person.Id>@person.DisplayName</option>
+                        }
+                        </InputSelect>
+                    }
+                </label>
+            </div>
+
+            <div class="input">
+                <label class="block">
+                    <span class="input-label">Betreuer</span>
+                    <InputSelect @bind-Value=editingProject.Data.CoOrganizerIds class="input-select" size="15">
+                    @foreach (var person in editingProject.CoOrganizerCandidates)
                     {
                         <option value=@person.Id>@person.DisplayName</option>
                     }
                     </InputSelect>
-                }
-            </label>
-        </div>
-
-        <div class="input">
-            <label class="block">
-                <span class="input-label">Betreuer</span>
-                <InputSelect @bind-Value=editingProject.Data.CoOrganizerIds class="input-select" size="15">
-                @foreach (var person in editingProject.CoOrganizerCandidates)
-                {
-                    <option value=@person.Id>@person.DisplayName</option>
-                }
-                </InputSelect>
-            </label>
-            <span class="text-xs inline-block pt-2">Tipp: Halte die <kbd>Strg</kbd>-Taste gedrückt, um mehrere Betreuer auszuwählen.</span>
-        </div>
-
-        <div class="input">
-            <span class="input-label block">Zeit</span>
-            <InputRadioGroup @bind-Value=editingProject.Data.TimeSelection.Type>
-                <label class="block">
-                    <InputRadio Value=TimeSelectionType.Continuous />
-                    <span class="text-sm">Laufend</span>
                 </label>
-                <div>
-                    <label>
-                        <InputRadio Value=TimeSelectionType.Regular />
-                        <span class="text-sm">Regelmäßig</span>
-                    </label>
-                    <span class="text-sm">alle <InputNumber @bind-Value=editingProject.Data.TimeSelection.RegularIntervalMinutes class="input-text !inline-block w-20" min="5" step="5" disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Regular) /> Minuten</span>
-                </div>
-                <div>
-                    <label>
-                        <InputRadio Value=TimeSelectionType.Individual />
-                        <span class="text-sm">Fixe Zeitpunkte</span>
-                    </label>
-                    <ul class="list-disc list-inside ml-6">
-                        @for (var i = 0; i < editingProject.Data.TimeSelection.IndividualTimes.Count; i++)
-                        {
-                            var index = i; @* Capture variable *@
-                            <li class="mt-2">
-                                <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:get=editingProject.Data.TimeSelection.IndividualTimes[index] @bind-Value:set=@(value => SetIndividualTime(index, value)) disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Individual) class="input-text !inline-block" />
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </InputRadioGroup>
-        </div>
+                <span class="text-xs inline-block pt-2">Tipp: Halte die <kbd>Strg</kbd>-Taste gedrückt, um mehrere Betreuer auszuwählen.</span>
+            </div>
 
-        <ValidationSummary />
+            <div class="input">
+                <span class="input-label block">Zeit</span>
+                <InputRadioGroup @bind-Value=editingProject.Data.TimeSelection.Type>
+                    <label class="block">
+                        <InputRadio Value=TimeSelectionType.Continuous />
+                        <span class="text-sm">Laufend</span>
+                    </label>
+                    <div>
+                        <label>
+                            <InputRadio Value=TimeSelectionType.Regular />
+                            <span class="text-sm">Regelmäßig</span>
+                        </label>
+                        <span class="text-sm">alle <InputNumber @bind-Value=editingProject.Data.TimeSelection.RegularIntervalMinutes class="input-text !inline-block w-20" min="5" step="5" disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Regular) /> Minuten</span>
+                    </div>
+                    <div>
+                        <label>
+                            <InputRadio Value=TimeSelectionType.Individual />
+                            <span class="text-sm">Fixe Zeitpunkte</span>
+                        </label>
+                        <ul class="list-disc list-inside ml-6">
+                            @for (var i = 0; i < editingProject.Data.TimeSelection.IndividualTimes.Count; i++)
+                            {
+                                var index = i; @* Capture variable *@
+                                <li class="mt-2">
+                                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:get=editingProject.Data.TimeSelection.IndividualTimes[index] @bind-Value:set=@(value => SetIndividualTime(index, value)) disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Individual) class="input-text !inline-block" />
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </InputRadioGroup>
+            </div>
 
-        <div class="input flex items-center gap-2">
-            <button type="submit" class="btn btn-green" disabled=@isSubmitting>
-                @(ProjectId == null ? "Projekt anlegen" : "Projekt aktualisieren")
-            </button>
-            @if (isSubmitting)
-            {
-                <span class="spinner spinner-green"></span>
-            }
-            @if (errorMessage != null)
-            {
-                <span class="inline-block ml-2 text-red-500">@errorMessage</span>
-            }
-        </div>
+            <ValidationSummary />
+
+            <div class="input flex items-center gap-2">
+                <button type="submit" class="btn btn-green" disabled=@isSubmitting>
+                    @(ProjectId == null ? "Projekt anlegen" : "Projekt aktualisieren")
+                </button>
+                @if (isSubmitting)
+                {
+                    <span class="spinner spinner-green"></span>
+                }
+                @if (errorMessage != null)
+                {
+                    <span class="inline-block ml-2 text-red-500">@errorMessage</span>
+                }
+            </div>
+        </fieldset>
     </EditForm>
 }
 
@@ -147,6 +166,17 @@ else if (editingProject.Links.Save != null)
 
     private JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
+    private InputFile? newMediaElement;
+
+    private IJSObjectReference? jsModule;
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/EditProject.razor.js");
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -158,6 +188,25 @@ else if (editingProject.Links.Save != null)
         {
             exception.Redirect();
         }
+    }
+
+    private void SetMedia(InputFileChangeEventArgs e)
+    {
+        if (editingProject == null)
+        {
+            return;
+        }
+        editingProject.Data.NewMediaNames = [.. e.GetMultipleFiles().Select(v => v.Name)];
+    }
+
+    private void MarkMediaForRemoval(int index)
+    {
+        if (editingProject == null)
+        {
+            return;
+        }
+        editingProject.Data.ExistingMedia[index].Remove = !editingProject.Data.ExistingMedia[index].Remove;
+        StateHasChanged();
     }
 
     private void SetIndividualTime(int index, DateTime? value)
@@ -175,23 +224,38 @@ else if (editingProject.Links.Save != null)
 
     private async Task ValidFormSubmitted(EditContext editContext)
     {
+        if (editingProject == null)
+        {
+            return;
+        }
+
         isSubmitting = true;
         errorMessage = null;
         StateHasChanged();
         try
         {
-            var project = editingProject!.Data.ToProjectData();
-            var response = await Http.PostAsJsonAsync(editingProject.Links.Save, project, serializerOptions);
+            var response = await Http.PostAsJsonAsync(editingProject.Links.Save, editingProject.Data.ToProjectData());
             response.EnsureSuccessStatusCode();
+            var mediaUploadUrls = (await response.Content.ReadFromJsonAsync<string[]>())!;
+            await jsModule!.InvokeVoidAsync("uploadMedia", [mediaUploadUrls]);
             NavigationManager.NavigateTo("/projects");
         }
-        catch
+        catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             errorMessage = "Projekt konnte nicht gespeichert werden.";
         }
         finally
         {
             isSubmitting = false;
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (jsModule is not null)
+        {
+            await jsModule.DisposeAsync();
         }
     }
 
@@ -219,6 +283,8 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
+        public List<ExistingMedia> ExistingMedia { get; set; } = [];
+        public List<string> NewMediaNames { get; set; } = [];
         [Required(ErrorMessage = "Ort darf nicht leer sein.")]
         public string Location { get; set; } = "";
         [Required(ErrorMessage = "Organisator muss ausgewählt werden.")]
@@ -233,6 +299,7 @@ else if (editingProject.Links.Save != null)
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
+                ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
                 CoOrganizerIds = projectData.CoOrganizerIds.ToArray(),
@@ -245,12 +312,26 @@ else if (editingProject.Links.Save != null)
             return new EditingProjectDataDto(
                 Title,
                 Description,
+                NewMediaNames,
+                [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],
                 Location,
                 OrganizerId ?? throw new InvalidOperationException("Organizer is empty. Did you forget to validate?"),
                 CoOrganizerIds,
                 TimeSelection.ToDto()
             );
         }
+    }
+
+    public class ExistingMedia
+    {
+        public ExistingMedia(string name, bool remove)
+        {
+            Name = name;
+            Remove = remove;
+        }
+
+        public string Name { get; set; }
+        public bool Remove { get; set; }
     }
 
     public class TimeSelection

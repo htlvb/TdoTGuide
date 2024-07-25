@@ -5,6 +5,9 @@ using TdoTGuide.WebAsm.Server.IntegrationTests.Utils;
 using TdoTGuide.WebAsm.Shared;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Net.Http.Headers;
+using Bogus;
 
 namespace TdoTGuide.WebAsm.Server.IntegrationTests;
 
@@ -71,5 +74,77 @@ public class CreateProjectTests
         using var response = await client.PostAsJsonAsync("/api/projects", project, host.GetJsonSerializerOptions());
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CanGetUploadUrlsWhenCreatingProjectWithMedia()
+    {
+        using var host = await InMemoryServer.Start();
+        var project = FakeData.EditingProjectDataDtoFaker.Generate() with { MediaFileNames = [ "1.jpg", "2.png", "3.mp4" ] };
+        using var client = host.GetTestClient()
+            .AuthenticateAsProjectWriter(project.OrganizerId);
+
+        using var response = await client.PostAsJsonAsync("/api/projects", project, host.GetJsonSerializerOptions());
+        response.EnsureSuccessStatusCode();
+        var uploadUrls = (await response.Content.ReadFromJsonAsync<string[]>())!;
+        Assert.Equal(project.MediaFileNames.Count, uploadUrls.Length);
+    }
+
+    [Fact]
+    public async Task CanGetUploadUrlsWhenUpdatingProjectWithMedia()
+    {
+        using var host = await InMemoryServer.Start();
+        var projectStore = host.Services.GetRequiredService<IProjectStore>();
+        var project = FakeData.ProjectFaker.Generate();
+        await projectStore.Create(project);
+        using var client = host.GetTestClient()
+            .AuthenticateAsProjectWriter(project.Organizer.Id);
+        var editProject = new EditingProjectDataDto(
+            project.Title,
+            project.Description,
+            ["1.jpg", "2.mp4"],
+            [],
+            project.Location,
+            project.Organizer.Id,
+            [.. project.CoOrganizers.Select(v => v.Id)],
+            new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+        );
+
+        using var response = await client.PostAsJsonAsync($"/api/projects/{project.Id}", editProject, host.GetJsonSerializerOptions());
+        response.EnsureSuccessStatusCode();
+        var uploadUrls = (await response.Content.ReadFromJsonAsync<string[]>())!;
+        Assert.Equal(editProject.MediaFileNames.Count, uploadUrls.Length);
+    }
+
+    [Fact]
+    public async Task CanUpdateMedia()
+    {
+        using var host = await InMemoryServer.Start();
+        var projectStore = host.Services.GetRequiredService<IProjectStore>();
+        var project = FakeData.ProjectFaker.Generate();
+        await projectStore.Create(project);
+        var projectMediaStore = (InMemoryProjectMediaStore)host.Services.GetRequiredService<IProjectMediaStore>();
+        var projectMedia = new[] {"1.jpg", "2.png", "3.mp4" };
+        await projectMediaStore.Add(project.Id, projectMedia);
+        using var client = host.GetTestClient()
+            .AuthenticateAsProjectWriter(project.Organizer.Id);
+        var projectUpdate = new EditingProjectDataDto(
+            project.Title,
+            project.Description,
+            ["4.png", "5.mp4"],
+            ["1.jpg", "3.mp4"],
+            project.Location,
+            project.Organizer.Id,
+            [.. project.CoOrganizers.Select(v => v.Id)],
+            new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+        );
+
+        using var response = await client.PostAsJsonAsync($"/api/projects/{project.Id}", projectUpdate, host.GetJsonSerializerOptions());
+        response.EnsureSuccessStatusCode();
+        var uploadUrls = (await response.Content.ReadFromJsonAsync<string[]>())!;
+        await projectMediaStore.Add(project.Id, uploadUrls.Select(v => new Uri(v).Segments.Last()));
+
+        var editProject = (await client.GetFromJsonAsync<EditingProjectDto>($"/api/projects/edit/{project.Id}"))!;
+        Assert.Equal(projectMedia.Length + projectUpdate.MediaFileNames.Count - projectUpdate.MediaFileNamesToRemove.Count, editProject.Data.MediaFileNames.Count);
     }
 }

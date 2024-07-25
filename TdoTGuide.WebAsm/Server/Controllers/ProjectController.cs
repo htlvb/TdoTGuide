@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using TdoTGuide.WebAsm.Server.Data;
 using TdoTGuide.WebAsm.Shared;
@@ -12,30 +13,41 @@ namespace TdoTGuide.WebAsm.Server.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly IProjectStore projectStore;
+        private readonly IProjectMediaStore projectMediaStore;
         private readonly IUserStore userStore;
         private readonly IAuthorizationService authService;
+        private readonly IOptions<JsonOptions> jsonOptions;
 
         private string UserId => HttpContext.User.GetObjectId()!;
 
         public ProjectController(
             IProjectStore projectStore,
+            IProjectMediaStore projectMediaStore,
             IUserStore userStore,
-            IAuthorizationService authService)
+            IAuthorizationService authService,
+            IOptions<JsonOptions> jsonOptions)
         {
             this.projectStore = projectStore;
+            this.projectMediaStore = projectMediaStore;
             this.userStore = userStore;
             this.authService = authService;
+            this.jsonOptions = jsonOptions;
         }
 
         [HttpGet("")]
         [Authorize("ListProjects")]
         public async Task<ProjectListDto> GetProjectList()
         {
-
+            var projects = await projectStore.GetAll().ToList();
+            var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);
             var projectDtos = new List<ProjectDto>();
-            await foreach (var project in projectStore.GetAll())
+            foreach (var project in projects)
             {
-                var projectDto = await GetProjectDtoFromProject(project);
+                if (!projectMedia.TryGetValue(project.Id, out var media))
+                {
+                    media = [];
+                }
+                var projectDto = await GetProjectDtoFromProject(project, media);
                 projectDtos.Add(projectDto);
             }
             var canCreateProject = (await authService.AuthorizeAsync(HttpContext.User, "CreateProject")).Succeeded;
@@ -78,6 +90,8 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                     new EditingProjectDataDto(
                         "",
                         "",
+                        [],
+                        [],
                         "",
                         UserId,
                         Array.Empty<string>(),
@@ -102,10 +116,13 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 {
                     return Forbid();
                 }
+                var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
                         project.Description,
+                        projectMediaNames,
+                        [],
                         project.Location,
                         project.Organizer.Id,
                         project.CoOrganizers.Select(v => v.Id).ToArray(),
@@ -134,7 +151,9 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 return Forbid();
             }
             await projectStore.Create(project);
-            return Ok();
+            var uniqueMediaFileNames = projectData.MediaFileNames.Select(GetUniqueFileName);
+            var fileUploadUrls = await projectMediaStore.GetNewMediaUploadUrls(project.Id, uniqueMediaFileNames).ToList();
+            return Ok(fileUploadUrls);
         }
 
         [HttpPost("{projectId}")]
@@ -156,7 +175,10 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 return Forbid();
             }
             await projectStore.Update(project);
-            return Ok();
+            await projectMediaStore.RemoveMedia(project.Id, projectData.MediaFileNamesToRemove);
+            var uniqueMediaFileNames = projectData.MediaFileNames.Select(GetUniqueFileName);
+            var fileUploadUrls = await projectMediaStore.GetNewMediaUploadUrls(project.Id, uniqueMediaFileNames).ToList();
+            return Ok(fileUploadUrls);
         }
 
         [HttpDelete("{projectId}")]
@@ -173,7 +195,14 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 return Forbid();
             }
             await projectStore.Delete(projectId);
+            var mediaNames = await projectMediaStore.GetAllMediaNames(projectId).ToList();
+            await projectMediaStore.RemoveMedia(projectId, mediaNames);
             return Ok();
+        }
+
+        private static string GetUniqueFileName(string fileName)
+        {
+            return $"{Path.GetFileNameWithoutExtension(fileName)}-{Guid.NewGuid()}{Path.GetExtension(fileName)}";
         }
 
         private async Task<Dictionary<string, ProjectOrganizer>> GetOrganizerCandidatesDictionary()
@@ -182,7 +211,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
             return organizerCandidates.ToDictionary(v => v.Id);
         }
 
-        private async Task<ProjectDto> GetProjectDtoFromProject(Project project)
+        private async Task<ProjectDto> GetProjectDtoFromProject(Project project, List<ProjectMedia> media)
         {
             ProjectOrganizerDto mapOrganizer(ProjectOrganizer organizer)
             {
@@ -213,11 +242,23 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
                 project.TimeSelection.Accept(new TimeSelectionToDtoVisitor()),
                 getCurrentUserRole(project),
+                [.. media.Select(GetProjectMediaDtoFromDomain)],
                 new ProjectLinksDto(
                     canUpdate ? $"projects/edit/{project.Id}" : default,
                     canDelete ? Url.Action(nameof(DeleteProject), new { projectId = project.Id }) : default
                 )
             );
+        }
+
+        private ProjectMediaDto GetProjectMediaDtoFromDomain(ProjectMedia media)
+        {
+            var type = media.Type switch
+            {
+                ProjectMediaType.Image => ProjectMediaTypeDto.Image,
+                ProjectMediaType.Video => ProjectMediaTypeDto.Video,
+                _ => throw new Exception($"Unknown project media type: {media.Type}")
+            };
+            return new ProjectMediaDto(type, media.Url);
         }
 
         private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>

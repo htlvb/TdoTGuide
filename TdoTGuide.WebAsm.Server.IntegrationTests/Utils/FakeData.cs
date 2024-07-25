@@ -80,6 +80,8 @@ public static class FakeData
             return new EditingProjectDataDto(
                 v.Random.Words(),
                 v.Lorem.Sentences(),
+                v.Random.WordsArray(0, 5),
+                v.Random.WordsArray(0, 5),
                 v.Address.BuildingNumber(),
                 organizerIds.First(),
                 organizerIds.Skip(1).ToList(),

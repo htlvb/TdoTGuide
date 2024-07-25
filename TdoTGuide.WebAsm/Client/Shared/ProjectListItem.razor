@@ -37,8 +37,38 @@
                 </div>
                 <span class="text-sm text-gray-600 pb-2">@Project.Location</span>
             </div>
-            <div class="description p-2 grow">
-                @ProjectDescription
+            <div class="grow flex flex-col p-2">
+                <div class="description grow">
+                    @ProjectDescription
+                </div>
+                <div>
+                    @if (Project.Media.Count == 0)
+                    {
+                        <span class="text-sm">Keine Medien vorhanden.</span>
+                    }
+                    else if (!showMedia)
+                    {
+                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count Medien anzeigen</a>
+                    }
+                    else
+                    {
+                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count Medien verstecken</a>
+
+                        <div class="flex flex-row flex-wrap gap-2 items-center pt-2">
+                            @foreach (var media in Project.Media)
+                            {
+                                if (media.Type == ProjectMediaTypeDto.Image)
+                                {
+                                    <img width="360" src="@media.Url" />
+                                }
+                                else if (media.Type == ProjectMediaTypeDto.Video)
+                                {
+                                    <video width="360" src="@media.Url" controls />
+                                }
+                            }
+                        </div>
+                    }
+                </div>
             </div>
             <div class="flex flex-col basis-1/6 gap-2 p-2">
                 @if (Project.Links.Edit != null)
@@ -124,5 +154,13 @@
             deletionState = ConfirmableActionState.None;
             StateHasChanged();
         }
+    }
+
+    private bool showMedia = false;
+
+    private void ToggleShowMedia()
+    {
+        showMedia = !showMedia;
+        StateHasChanged();
     }
 }
