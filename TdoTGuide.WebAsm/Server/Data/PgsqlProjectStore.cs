@@ -79,7 +79,7 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, time_selection FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, departments, location, organizer, co_organizers, time_selection FROM project", dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -89,7 +89,7 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, departments, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
@@ -101,10 +101,11 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, departments, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @departments, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
+            cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -114,10 +115,11 @@ namespace TdoTGuide.WebAsm.Server.Data
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, departments=@departments, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
+            cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -216,6 +218,7 @@ namespace TdoTGuide.WebAsm.Server.Data
             Guid Id,
             string Title,
             string Description,
+            IReadOnlyCollection<int> Departments,
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers,
@@ -228,10 +231,11 @@ namespace TdoTGuide.WebAsm.Server.Data
                     reader.GetGuid(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.GetString(3),
-                    reader.GetFieldValue<DbProjectOrganizer>(4),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(5),
-                    reader.GetFieldValue<DbTimeSelection>(6)
+                    reader.GetFieldValue<int[]>(3),
+                    reader.GetString(4),
+                    reader.GetFieldValue<DbProjectOrganizer>(5),
+                    reader.GetFieldValue<DbProjectOrganizer[]>(6),
+                    reader.GetFieldValue<DbTimeSelection>(7)
                 );
             }
 
@@ -241,6 +245,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                     Guid.Parse(project.Id),
                     project.Title,
                     project.Description,
+                    [.. project.Departments.Select(int.Parse)],
                     project.Location,
                     DbProjectOrganizer.FromDomain(project.Organizer),
                     project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList(),
@@ -254,6 +259,7 @@ namespace TdoTGuide.WebAsm.Server.Data
                     Id.ToString(),
                     Title,
                     Description,
+                    [.. Departments.Select(v => $"{v}")],
                     Location,
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList(),

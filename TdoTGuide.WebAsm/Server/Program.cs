@@ -50,6 +50,12 @@ builder.Services.AddSingleton<IProjectStore>(provider =>
     return new PgsqlProjectStore(connectionString);
 });
 
+builder.Services.AddSingleton<IDepartmentStore>(provider =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql.");
+    return new PgsqlDepartmentStore(connectionString);
+});
+
 builder.Services.AddSingleton<IProjectMediaStore, MinioProjectMediaStore>();
 
 builder.Services.AddScoped<IUserStore>(provider =>

@@ -35,20 +35,33 @@ else if (editingProject.Links.Save != null)
             <div class="input">
                 <label class="block">
                     <span class="input-label">Titel</span>
-                    <InputText @bind-Value=editingProject.Data.Title class="input-text w-96 max-w-full" />
+                    <InputText @bind-Value=editingProject.Data.Title class="input-text w-full md:w-96" />
                 </label>
             </div>
 
             <div class="input">
                 <label class="block">
                     <span class="input-label">Beschreibung</span>
-                    <InputTextArea @bind-Value=editingProject.Data.Description class="input-text w-[32rem] max-w-full h-48" />
+                    <InputTextArea @bind-Value=editingProject.Data.Description class="input-text w-full md:w-[32rem] h-48" />
                 </label>
                 <ul class="list-disc list-inside text-xs">
                     <li>Verwende <span class="text-lg text-orange-500"># Überschriften</span> und <span class="text-orange-500">* Aufzählungen</span></li>
                     <li>Formatiere Text <span class="italic text-orange-500">*kursiv*</span> und <span class="font-bold text-orange-500">**fett**</span></li>
                     <li>Zwei Zeilenumbrüche hintereinander erzeugen einen neuen Absatz</li>
                 </ul>
+            </div>
+
+            <div class="input">
+                <span class="input-label block">Abteilungen</span>
+                <div class="flex flex-row flex-wrap gap-2 mt-2">
+                    @foreach (var department in editingProject.AllDepartments)
+                    {
+                        var isSelected = editingProject.Data.Departments.Contains(department.Id);
+                        var styles = isSelected ? $"background-color: {department.Color}" : "";
+                        var classes = $"btn text-white !rounded-lg {(isSelected ? "" : "!text-inherit")}";
+                        <button type="button" @onclick=@(() => ToggleSelectDepartment(department.Id)) value="@department.Id" class="@classes" style="@styles">@department.Name</button>
+                    }
+                </div>
             </div>
 
             <div class="input">
@@ -67,7 +80,7 @@ else if (editingProject.Links.Save != null)
             <div class="input">
                 <label class="block">
                     <span class="input-label">Ort</span>
-                    <InputText @bind-Value=editingProject.Data.Location class="input-text w-96 max-w-full" />
+                    <InputText @bind-Value=editingProject.Data.Location class="input-text w-full md:w-96" />
                 </label>
             </div>
     
@@ -190,6 +203,18 @@ else if (editingProject.Links.Save != null)
         }
     }
 
+    private void ToggleSelectDepartment(string departmentId)
+    {
+        if (editingProject == null)
+        {
+            return;
+        }
+        if (!editingProject.Data.Departments.Remove(departmentId))
+        {
+            editingProject.Data.Departments.Add(departmentId);
+        }
+    }
+
     private void SetMedia(InputFileChangeEventArgs e)
     {
         if (editingProject == null)
@@ -261,6 +286,7 @@ else if (editingProject.Links.Save != null)
 
     public record EditingProject(
         EditingProjectData Data,
+        IReadOnlyCollection<DepartmentDto> AllDepartments,
         IReadOnlyCollection<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyCollection<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -270,6 +296,7 @@ else if (editingProject.Links.Save != null)
         {
             return new EditingProject(
                 EditingProjectData.FromProjectData(project.Data),
+                project.AllDepartments,
                 project.OrganizerCandidates,
                 project.CoOrganizerCandidates,
                 project.Links
@@ -283,6 +310,7 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
+        public required List<string> Departments { get; init; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
         public List<string> NewMediaNames { get; set; } = [];
         [Required(ErrorMessage = "Ort darf nicht leer sein.")]
@@ -299,6 +327,7 @@ else if (editingProject.Links.Save != null)
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
+                Departments = [.. projectData.Departments],
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
@@ -312,6 +341,7 @@ else if (editingProject.Links.Save != null)
             return new EditingProjectDataDto(
                 Title,
                 Description,
+                Departments,
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],
                 Location,

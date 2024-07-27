@@ -4,6 +4,7 @@ namespace TdoTGuide.WebAsm.Shared
 {
     public record EditingProjectDto(
         EditingProjectDataDto Data,
+        IReadOnlyList<DepartmentDto> AllDepartments,
         IReadOnlyList<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -12,6 +13,7 @@ namespace TdoTGuide.WebAsm.Shared
     public record EditingProjectDataDto(
         string Title,
         string Description,
+        IReadOnlyList<string> Departments,
         IReadOnlyList<string> MediaFileNames,
         IReadOnlyList<string> MediaFileNamesToRemove,
         string Location,
@@ -62,6 +64,12 @@ namespace TdoTGuide.WebAsm.Shared
             CurrentUserStatus == UserRoleForProjectDto.Organizer
             || CurrentUserStatus == UserRoleForProjectDto.CoOrganizer;
     }
+
+    public record DepartmentDto(
+        string Id,
+        string Name,
+        string Color
+    );
 
     public record ProjectOrganizerDto(
         string Id,

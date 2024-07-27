@@ -13,6 +13,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly IProjectStore projectStore;
+        private readonly IDepartmentStore departmentStore;
         private readonly IProjectMediaStore projectMediaStore;
         private readonly IUserStore userStore;
         private readonly IAuthorizationService authService;
@@ -22,6 +23,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
 
         public ProjectController(
             IProjectStore projectStore,
+            IDepartmentStore departmentStore,
             IProjectMediaStore projectMediaStore,
             IUserStore userStore,
             IAuthorizationService authService,
@@ -32,6 +34,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
             this.userStore = userStore;
             this.authService = authService;
             this.jsonOptions = jsonOptions;
+            this.departmentStore = departmentStore;
         }
 
         [HttpGet("")]
@@ -86,10 +89,13 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                     return Forbid();
                 }
 
+                var departments = await departmentStore.GetDepartments();
+
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         "",
                         "",
+                        [],
                         [],
                         [],
                         "",
@@ -97,6 +103,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                         Array.Empty<string>(),
                         new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
                     ),
+                    [.. departments.Select(GetDepartmentDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -117,10 +124,12 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                     return Forbid();
                 }
                 var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
+                var departments = await departmentStore.GetDepartments();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
                         project.Description,
+                        project.Departments,
                         projectMediaNames,
                         [],
                         project.Location,
@@ -128,6 +137,7 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                         project.CoOrganizers.Select(v => v.Id).ToArray(),
                         project.TimeSelection.Accept(new TimeSelectionToDtoVisitor())
                     ),
+                    [.. departments.Select(GetDepartmentDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -259,6 +269,11 @@ namespace TdoTGuide.WebAsm.Server.Controllers
                 _ => throw new Exception($"Unknown project media type: {media.Type}")
             };
             return new ProjectMediaDto(type, media.Url);
+        }
+
+        private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
+        {
+            return new(department.Id, department.Name, department.Color);
         }
 
         private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>
