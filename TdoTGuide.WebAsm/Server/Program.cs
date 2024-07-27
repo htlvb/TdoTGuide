@@ -36,7 +36,7 @@ builder.Services.AddTdoTGuideAuthorizationRules();
 
 builder.Services.AddMinio(minioClient => minioClient
     .WithEndpoint(builder.Configuration.GetSection("Minio")["Endpoint"])
-    .WithSSL(false)
+    .WithSSL(builder.Configuration.GetSection("Minio").GetValue("UseSSL", true))
     .WithCredentials(
         builder.Configuration.GetSection("Minio")["AccessKey"],
         builder.Configuration.GetSection("Minio")["SecretKey"]
