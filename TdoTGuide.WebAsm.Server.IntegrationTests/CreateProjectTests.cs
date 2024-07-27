@@ -102,6 +102,7 @@ public class CreateProjectTests
         var editProject = new EditingProjectDataDto(
             project.Title,
             project.Description,
+            project.Departments,
             ["1.jpg", "2.mp4"],
             [],
             project.Location,
@@ -131,6 +132,7 @@ public class CreateProjectTests
         var projectUpdate = new EditingProjectDataDto(
             project.Title,
             project.Description,
+            project.Departments,
             ["4.png", "5.mp4"],
             ["1.jpg", "3.mp4"],
             project.Location,

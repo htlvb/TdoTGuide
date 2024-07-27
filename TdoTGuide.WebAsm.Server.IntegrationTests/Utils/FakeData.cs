@@ -35,6 +35,7 @@ public static class FakeData
                 v.Random.Uuid().ToString(),
                 v.Random.Words(),
                 v.Lorem.Sentences(),
+                v.Random.ArrayElements([.. Enumerable.Range(1, 10).Select(v => $"{v}")]),
                 v.Address.BuildingNumber(),
                 organizers.First(),
                 organizers.Skip(1).ToList(),
@@ -80,6 +81,7 @@ public static class FakeData
             return new EditingProjectDataDto(
                 v.Random.Words(),
                 v.Lorem.Sentences(),
+                v.Random.ArrayElements([.. Enumerable.Range(0, 10).Select(v => $"{v}")]),
                 v.Random.WordsArray(0, 5),
                 v.Random.WordsArray(0, 5),
                 v.Address.BuildingNumber(),
