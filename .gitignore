@@ -4,8 +4,8 @@ obj/
 *.user
 .tools/
 /object-storage
-/TdoTGuide.WebAsm/Client/wwwroot/css/app.min.css
-/TdoTGuide.WebAsm/Client/wwwroot/lib
+/TdoTGuide.Admin/Client/wwwroot/css/app.min.css
+/TdoTGuide.Admin/Client/wwwroot/lib
 /TdoTGuide.Web/wwwroot/css/app.min.css
 /TdoTGuide.SampleDataGenerator/AttendeeCandidates.json
 /TdoTGuide.SampleDataGenerator/OrganizerCandidates.json
