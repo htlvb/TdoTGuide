@@ -43,6 +43,7 @@ namespace TdoTGuide.Admin.Shared
 
     public record ProjectListDto(
         IReadOnlyList<ProjectDto> Projects,
+        IReadOnlyList<DepartmentDto> AllDepartments,
         ProjectListLinksDto Links
     );
 
@@ -53,6 +54,8 @@ namespace TdoTGuide.Admin.Shared
     public record ProjectDto(
         string Title,
         string Description,
+        string Group,
+        IReadOnlyList<string> Departments,
         string Location,
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,

@@ -7,16 +7,29 @@
 {
     <div class="project border-l-2 border-gray-400 hover:border-main rounded shadow hover:shadow-main">
         <div class="flex flex-col divide-y md:divide-y-0 divide-x-0 md:divide-x md:flex-row w-full">
-            <div class="flex flex-col basis-1/5 shrink-0 p-2">
-                <span class="text-xl text-black pb-2">@Project.Title</span>
-                <span class="text-sm text-gray-600 pb-2">
+            <div class="flex flex-col basis-1/5 shrink-0 p-2 gap-2">
+                <span class="text-xl text-black">@Project.Title</span>
+                <span>@Project.Group</span>
+                <span class="flex gap-1">
+                    @{
+                        var projectDepartments = Project.Departments
+                            .Select(departmentId => AllDepartments.FirstOrDefault(v => v.Id == departmentId))
+                            .OfType<DepartmentDto>();
+                    }
+                    @foreach (var department in projectDepartments)
+                    {
+                        var styles = $"background-color: {department.Color}";
+                        <span class="btn !cursor-auto text-white !rounded-lg" style="@styles">@department.Name</span>
+                    }
+                </span>
+                <span class="text-sm text-gray-600">
                     <strong>@Project.Organizer.DisplayName</strong>
                     @foreach (var coOrganizer in Project.CoOrganizers)
                     {
                         <text>, @coOrganizer.DisplayName</text>
                     }
                 </span>
-                <div class="text-sm text-gray-600 pb-2">
+                <div class="text-sm text-gray-600">
                     @if (Project.TimeSelection.Type == TimeSelectionTypeDto.Continuous)
                     {
                         <text>laufend</text>
@@ -35,7 +48,7 @@
                         </ul>
                     }
                 </div>
-                <span class="text-sm text-gray-600 pb-2">@Project.Location</span>
+                <span class="text-sm text-gray-600">@Project.Location</span>
             </div>
             <div class="grow flex flex-col p-2">
                 <div class="description grow">
@@ -101,6 +114,9 @@
 
     [Parameter]
     public ProjectDto? Project { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<DepartmentDto> AllDepartments { get; set; } = [];
 
     public MarkupString ProjectDescription
     {

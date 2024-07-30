@@ -54,8 +54,10 @@ namespace TdoTGuide.Admin.Server.Controllers
                 projectDtos.Add(projectDto);
             }
             var canCreateProject = (await authService.AuthorizeAsync(HttpContext.User, "CreateProject")).Succeeded;
+            var departments = await departmentStore.GetDepartments();
             return new ProjectListDto(
                 projectDtos,
+                [.. departments.Select(GetDepartmentDtoFromDomain)],
                 new ProjectListLinksDto(
                     canCreateProject ? "projects/new" : default
                 )
@@ -253,6 +255,8 @@ namespace TdoTGuide.Admin.Server.Controllers
             return new ProjectDto(
                 project.Title,
                 project.Description,
+                project.Group,
+                project.Departments,
                 project.Location,
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
