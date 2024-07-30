@@ -61,11 +61,11 @@
                     }
                     else if (!showMedia)
                     {
-                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count Medien anzeigen</a>
+                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count @(Project.Media.Count == 1 ? "Medium" : "Medien") anzeigen</a>
                     }
                     else
                     {
-                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count Medien verstecken</a>
+                        <a class="link text-sm" @onclick="ToggleShowMedia">@Project.Media.Count @(Project.Media.Count == 1 ? "Medium" : "Medien") verstecken</a>
 
                         <div class="flex flex-row flex-wrap gap-2 items-center pt-2">
                             @foreach (var media in Project.Media)
