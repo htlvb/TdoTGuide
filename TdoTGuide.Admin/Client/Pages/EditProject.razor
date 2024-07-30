@@ -52,6 +52,19 @@ else if (editingProject.Links.Save != null)
             </div>
 
             <div class="input">
+                <label class="block">
+                    <span class="input-label">Gruppe</span>
+                    <InputText @bind-Value=editingProject.Data.Group list="project-groups" class="input-text w-full md:w-96" />
+                    <datalist id="project-groups">
+                        @foreach (var groupName in editingProject.AllGroups)
+                        {
+                            <option value="@groupName"></option>
+                        }
+                    </datalist>
+                </label>
+            </div>
+
+            <div class="input">
                 <span class="input-label block">Abteilungen</span>
                 <div class="flex flex-row flex-wrap gap-2 mt-2">
                     @foreach (var department in editingProject.AllDepartments)
@@ -286,6 +299,7 @@ else if (editingProject.Links.Save != null)
 
     public record EditingProject(
         EditingProjectData Data,
+        IReadOnlyCollection<string> AllGroups,
         IReadOnlyCollection<DepartmentDto> AllDepartments,
         IReadOnlyCollection<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyCollection<ProjectOrganizerDto> CoOrganizerCandidates,
@@ -296,6 +310,7 @@ else if (editingProject.Links.Save != null)
         {
             return new EditingProject(
                 EditingProjectData.FromProjectData(project.Data),
+                project.AllGroups,
                 project.AllDepartments,
                 project.OrganizerCandidates,
                 project.CoOrganizerCandidates,
@@ -310,6 +325,8 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
+        [Required(ErrorMessage = "Gruppe darf nicht leer sein.")]
+        public required string Group { get; set; }
         public required List<string> Departments { get; init; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
         public List<string> NewMediaNames { get; set; } = [];
@@ -327,6 +344,7 @@ else if (editingProject.Links.Save != null)
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
+                Group = projectData.Group,
                 Departments = [.. projectData.Departments],
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
@@ -341,6 +359,7 @@ else if (editingProject.Links.Save != null)
             return new EditingProjectDataDto(
                 Title,
                 Description,
+                Group,
                 Departments,
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],

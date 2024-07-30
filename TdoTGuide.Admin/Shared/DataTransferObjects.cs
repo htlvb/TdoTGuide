@@ -4,6 +4,7 @@ namespace TdoTGuide.Admin.Shared
 {
     public record EditingProjectDto(
         EditingProjectDataDto Data,
+        IReadOnlyList<string> AllGroups,
         IReadOnlyList<DepartmentDto> AllDepartments,
         IReadOnlyList<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizerCandidates,
@@ -13,6 +14,7 @@ namespace TdoTGuide.Admin.Shared
     public record EditingProjectDataDto(
         string Title,
         string Description,
+        string Group,
         IReadOnlyList<string> Departments,
         IReadOnlyList<string> MediaFileNames,
         IReadOnlyList<string> MediaFileNamesToRemove,

@@ -27,3 +27,8 @@ INSERT INTO department (name, color) VALUES
 ALTER TABLE project ADD COLUMN departments JSON;
 UPDATE project SET departments=(SELECT json_agg(id) FROM department);
 ALTER TABLE project ALTER COLUMN departments SET NOT NULL;
+
+-- Add project group
+ALTER TABLE project ADD COLUMN "group" VARCHAR;
+UPDATE project SET "group"='';
+ALTER TABLE project ALTER COLUMN "group" SET NOT NULL;

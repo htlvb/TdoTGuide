@@ -89,10 +89,12 @@ namespace TdoTGuide.Admin.Server.Controllers
                     return Forbid();
                 }
 
+                var projectGroups = await projectStore.GetProjectGroups().ToList();
                 var departments = await departmentStore.GetDepartments();
 
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
+                        "",
                         "",
                         "",
                         [],
@@ -103,6 +105,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         Array.Empty<string>(),
                         new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
                     ),
+                    projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
@@ -124,11 +127,13 @@ namespace TdoTGuide.Admin.Server.Controllers
                     return Forbid();
                 }
                 var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
+                var projectGroups = await projectStore.GetProjectGroups().ToList();
                 var departments = await departmentStore.GetDepartments();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
                         project.Description,
+                        project.Group,
                         project.Departments,
                         projectMediaNames,
                         [],
@@ -137,6 +142,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         project.CoOrganizers.Select(v => v.Id).ToArray(),
                         project.TimeSelection.Accept(new TimeSelectionToDtoVisitor())
                     ),
+                    projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,

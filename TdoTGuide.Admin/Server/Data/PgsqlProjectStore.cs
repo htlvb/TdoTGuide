@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text.Json.Serialization;
+using Dapper;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -46,6 +47,16 @@ namespace TdoTGuide.Admin.Server.Data
             return dbProject.ToDomain();
         }
 
+        public async IAsyncEnumerable<string> GetProjectGroups()
+        {
+            await using var dbConnection = await dataSource.OpenConnectionAsync();
+            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT \"group\" FROM project ORDER BY \"group\"");
+            foreach (var group in groups)
+            {
+                yield return group;
+            }
+        }
+
         public async Task Delete(string projectId)
         {
             if (!Guid.TryParse(projectId, out var projectGuid))
@@ -79,7 +90,7 @@ namespace TdoTGuide.Admin.Server.Data
 
         private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, departments, location, organizer, co_organizers, time_selection FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection FROM project", dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -89,7 +100,7 @@ namespace TdoTGuide.Admin.Server.Data
 
         private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, departments, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
@@ -101,10 +112,11 @@ namespace TdoTGuide.Admin.Server.Data
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, departments, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @departments, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @group, @departments, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
+            cmd.Parameters.AddWithValue("group", project.Group);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
@@ -115,10 +127,11 @@ namespace TdoTGuide.Admin.Server.Data
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, departments=@departments, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, \"group\"=@group, departments=@departments, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
+            cmd.Parameters.AddWithValue("group", project.Group);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
@@ -218,6 +231,7 @@ namespace TdoTGuide.Admin.Server.Data
             Guid Id,
             string Title,
             string Description,
+            string Group,
             IReadOnlyCollection<int> Departments,
             string Location,
             DbProjectOrganizer Organizer,
@@ -231,11 +245,12 @@ namespace TdoTGuide.Admin.Server.Data
                     reader.GetGuid(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.GetFieldValue<int[]>(3),
-                    reader.GetString(4),
-                    reader.GetFieldValue<DbProjectOrganizer>(5),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(6),
-                    reader.GetFieldValue<DbTimeSelection>(7)
+                    reader.GetString(3),
+                    reader.GetFieldValue<int[]>(4),
+                    reader.GetString(5),
+                    reader.GetFieldValue<DbProjectOrganizer>(6),
+                    reader.GetFieldValue<DbProjectOrganizer[]>(7),
+                    reader.GetFieldValue<DbTimeSelection>(8)
                 );
             }
 
@@ -245,6 +260,7 @@ namespace TdoTGuide.Admin.Server.Data
                     Guid.Parse(project.Id),
                     project.Title,
                     project.Description,
+                    project.Group,
                     [.. project.Departments.Select(int.Parse)],
                     project.Location,
                     DbProjectOrganizer.FromDomain(project.Organizer),
@@ -259,6 +275,7 @@ namespace TdoTGuide.Admin.Server.Data
                     Id.ToString(),
                     Title,
                     Description,
+                    Group,
                     [.. Departments.Select(v => $"{v}")],
                     Location,
                     Organizer.ToDomain(),

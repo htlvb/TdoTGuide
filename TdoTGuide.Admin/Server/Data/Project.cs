@@ -7,6 +7,7 @@ namespace TdoTGuide.Admin.Server.Data
         string Id,
         string Title,
         string Description,
+        string Group,
         IReadOnlyList<string> Departments,
         string Location,
         ProjectOrganizer Organizer,
@@ -26,6 +27,12 @@ namespace TdoTGuide.Admin.Server.Data
             {
                 project = null;
                 errorMessage = "Project title must not be empty.";
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(projectData.Group))
+            {
+                project = null;
+                errorMessage = "Project group must not be empty.";
                 return false;
             }
             if (!organizerCandidates.TryGetValue(projectData.OrganizerId, out var organizer))
@@ -82,6 +89,7 @@ namespace TdoTGuide.Admin.Server.Data
                 projectId,
                 projectData.Title,
                 projectData.Description,
+                projectData.Group,
                 projectData.Departments,
                 projectData.Location,
                 organizer,

@@ -21,6 +21,15 @@ public class InMemoryProjectStore : IProjectStore
         return projects.Find(v => v.Id == projectId);
     }
 
+    public async IAsyncEnumerable<string> GetProjectGroups()
+    {
+        await Task.Yield();
+        foreach (var group in projects.Select(v => v.Group).Distinct())
+        {
+            yield return group;
+        }
+    }
+
     public async Task Delete(string projectId)
     {
         await Task.Yield();
