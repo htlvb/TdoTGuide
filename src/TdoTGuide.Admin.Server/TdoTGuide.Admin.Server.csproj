@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Client\TdoTGuide.Admin.Client.csproj" />
-    <ProjectReference Include="..\Shared\TdoTGuide.Admin.Shared.csproj" />
+    <ProjectReference Include="..\TdoTGuide.Admin.Client\TdoTGuide.Admin.Client.csproj" />
+    <ProjectReference Include="..\TdoTGuide.Admin.Shared\TdoTGuide.Admin.Shared.csproj" />
   </ItemGroup>
 
 </Project>

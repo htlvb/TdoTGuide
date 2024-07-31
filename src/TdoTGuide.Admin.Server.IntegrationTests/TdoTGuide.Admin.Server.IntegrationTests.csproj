@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TdoTGuide.Admin\Server\TdoTGuide.Admin.Server.csproj" />
+    <ProjectReference Include="..\TdoTGuide.Admin.Server\TdoTGuide.Admin.Server.csproj" />
   </ItemGroup>
 
 </Project>

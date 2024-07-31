@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\TdoTGuide.Admin.Shared.csproj" />
+    <ProjectReference Include="..\TdoTGuide.Admin.Shared\TdoTGuide.Admin.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

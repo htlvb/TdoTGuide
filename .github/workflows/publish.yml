@@ -49,6 +49,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./
-          file: ./TdoTGuide.Admin/Server/Dockerfile
+          file: ./src/TdoTGuide.Admin.Server/Dockerfile
           push: true
           tags: ghcr.io/htlvb/tdot-guide:${{ github.sha }}
