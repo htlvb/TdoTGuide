@@ -12,7 +12,7 @@ COPY ["src/TdoTGuide.Admin.Shared/TdoTGuide.Admin.Shared.csproj", "TdoTGuide.Adm
 COPY ["src/TdoTGuide.Admin.Client/TdoTGuide.Admin.Client.csproj", "TdoTGuide.Admin.Client/"]
 COPY ["src/TdoTGuide.Server.Common/TdoTGuide.Server.Common.csproj", "TdoTGuide.Server.Common/"]
 RUN dotnet restore "TdoTGuide.Admin.Server/TdoTGuide.Admin.Server.csproj"
-COPY . .
+COPY src/ .
 WORKDIR "/src/TdoTGuide.Admin.Server"
 RUN dotnet build "TdoTGuide.Admin.Server.csproj" -c Release -o /app/build
 
