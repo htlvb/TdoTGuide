@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using TdoTGuide.Admin.Server.Data;
-using TdoTGuide.Admin.Server.IntegrationTests.Utils;
-using TdoTGuide.Admin.Shared;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Net.Http.Headers;
-using Bogus;
+using TdoTGuide.Admin.Server.IntegrationTests.Utils;
+using TdoTGuide.Admin.Shared;
+using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests;
 
@@ -27,7 +24,7 @@ public class CreateProjectTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var actualNewProjects = (await projectStore.GetAll().ToList()).Except(existingProjects).ToList();
         Assert.Single(actualNewProjects);
-        var isProjectValid = Project.TryCreateFromEditingProjectDataDto(project, actualNewProjects[0].Id, FakeData.ProjectOrganizers.ToDictionary(v => v.Id), out var expectedNewProject, out _);
+        var isProjectValid = Mapper.TryMapEditingProjectDataDtoToProject(project, actualNewProjects[0].Id, FakeData.ProjectOrganizers.ToDictionary(v => v.Id), out var expectedNewProject, out _);
         Assert.True(isProjectValid, "Expected project to be valid");
         Assert.Equal(expectedNewProject, actualNewProjects[0], new ProjectEqualityComparer());
     }
@@ -63,7 +60,7 @@ public class CreateProjectTests
     [Theory]
     [MemberData(nameof(InvalidProjectData))]
     public async Task CantCreateInvalidProject(
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1026: Unused parameter", Justification = "Improves readability.")]string description,
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1026: Unused parameter", Justification = "Improves readability.")] string description,
         EditingProjectDataDto project
     )
     {
@@ -80,7 +77,7 @@ public class CreateProjectTests
     public async Task CanGetUploadUrlsWhenCreatingProjectWithMedia()
     {
         using var host = await InMemoryServer.Start();
-        var project = FakeData.EditingProjectDataDtoFaker.Generate() with { MediaFileNames = [ "1.jpg", "2.png", "3.mp4" ] };
+        var project = FakeData.EditingProjectDataDtoFaker.Generate() with { MediaFileNames = ["1.jpg", "2.png", "3.mp4"] };
         using var client = host.GetTestClient()
             .AuthenticateAsProjectWriter(project.OrganizerId);
 
@@ -126,7 +123,7 @@ public class CreateProjectTests
         var project = FakeData.ProjectFaker.Generate();
         await projectStore.Create(project);
         var projectMediaStore = (InMemoryProjectMediaStore)host.Services.GetRequiredService<IProjectMediaStore>();
-        var projectMedia = new[] {"1.jpg", "2.png", "3.mp4" };
+        var projectMedia = new[] { "1.jpg", "2.png", "3.mp4" };
         await projectMediaStore.Add(project.Id, projectMedia);
         using var client = host.GetTestClient()
             .AuthenticateAsProjectWriter(project.Organizer.Id);

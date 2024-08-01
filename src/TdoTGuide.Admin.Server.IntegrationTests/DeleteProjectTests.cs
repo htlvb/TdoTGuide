@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using TdoTGuide.Admin.Server.Data;
-using TdoTGuide.Admin.Server.IntegrationTests.Utils;
 using System.Net;
+using TdoTGuide.Admin.Server.IntegrationTests.Utils;
+using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests;
 

@@ -1,4 +1,4 @@
-﻿using TdoTGuide.Admin.Server.Data;
+﻿using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests.Utils;
 

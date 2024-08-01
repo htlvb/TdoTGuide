@@ -1,7 +1,6 @@
 ﻿using Bogus;
-using TdoTGuide.Admin.Server;
-using TdoTGuide.Admin.Server.Data;
 using TdoTGuide.Admin.Shared;
+using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests.Utils;
 

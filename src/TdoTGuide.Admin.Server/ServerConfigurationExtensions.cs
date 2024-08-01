@@ -1,7 +1,6 @@
 ﻿using Microsoft.Identity.Web;
-using TdoTGuide.Admin.Server.Data;
-using TdoTGuide.Admin.Shared;
 using System.Reflection;
+using TdoTGuide.Server.Common;
 
 public static class ServerConfigurationExtensions
 {

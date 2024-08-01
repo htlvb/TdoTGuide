@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
-using TdoTGuide.Admin.Server.Data;
 using TdoTGuide.Admin.Shared;
+using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.Controllers
 {
@@ -157,10 +157,10 @@ namespace TdoTGuide.Admin.Server.Controllers
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> CreateProject([FromBody]EditingProjectDataDto projectData)
+        public async Task<IActionResult> CreateProject([FromBody] EditingProjectDataDto projectData)
         {
             var organizerCandidates = await GetOrganizerCandidatesDictionary();
-            if (!Project.TryCreateFromEditingProjectDataDto(projectData, Guid.NewGuid().ToString(), organizerCandidates, out var project, out var errorMessage))
+            if (!Mapper.TryMapEditingProjectDataDtoToProject(projectData, Guid.NewGuid().ToString(), organizerCandidates, out var project, out var errorMessage))
             {
                 return BadRequest(errorMessage);
             }
@@ -184,7 +184,7 @@ namespace TdoTGuide.Admin.Server.Controllers
             }
 
             var organizerCandidates = await GetOrganizerCandidatesDictionary();
-            if (!Project.TryCreateFromEditingProjectDataDto(projectData, projectId, organizerCandidates, out var project, out var errorMessage))
+            if (!Mapper.TryMapEditingProjectDataDtoToProject(projectData, projectId, organizerCandidates, out var project, out var errorMessage))
             {
                 return BadRequest(errorMessage);
             }

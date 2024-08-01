@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TdoTGuide.Admin.Shared", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TdoTGuide.Admin.Server.IntegrationTests", "src\TdotGuide.Admin.Server.IntegrationTests\TdoTGuide.Admin.Server.IntegrationTests.csproj", "{0E72C2F2-781D-4D27-BA82-63F64062FCD4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TdoTGuide.Server.Common", "src\TdoTGuide.Server.Common\TdoTGuide.Server.Common.csproj", "{78152436-25B2-49ED-8B51-0B1AC2B61B78}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TdoTGuide.Visitor.Server", "src\TdoTGuide.Visitor.Server\TdoTGuide.Visitor.Server.csproj", "{B925E89E-7638-43C3-8A10-F05E2F8BFC02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{0E72C2F2-781D-4D27-BA82-63F64062FCD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E72C2F2-781D-4D27-BA82-63F64062FCD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E72C2F2-781D-4D27-BA82-63F64062FCD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78152436-25B2-49ED-8B51-0B1AC2B61B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78152436-25B2-49ED-8B51-0B1AC2B61B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78152436-25B2-49ED-8B51-0B1AC2B61B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78152436-25B2-49ED-8B51-0B1AC2B61B78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B925E89E-7638-43C3-8A10-F05E2F8BFC02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B925E89E-7638-43C3-8A10-F05E2F8BFC02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B925E89E-7638-43C3-8A10-F05E2F8BFC02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B925E89E-7638-43C3-8A10-F05E2F8BFC02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

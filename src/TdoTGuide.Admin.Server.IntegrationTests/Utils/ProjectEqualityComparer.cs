@@ -1,5 +1,5 @@
-﻿using TdoTGuide.Admin.Server.Data;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests.Utils;
 

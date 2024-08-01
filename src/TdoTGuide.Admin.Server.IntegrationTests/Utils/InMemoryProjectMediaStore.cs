@@ -1,4 +1,4 @@
-﻿using TdoTGuide.Admin.Server.Data;
+﻿using TdoTGuide.Server.Common;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests.Utils;
 
@@ -23,7 +23,7 @@ public class InMemoryProjectMediaStore : IProjectMediaStore
         {
             yield break;
         }
-        foreach(var item in list)
+        foreach (var item in list)
         {
             yield return item;
         }

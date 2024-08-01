@@ -1,5 +1,5 @@
-﻿using TdoTGuide.Admin.Server.Data;
-using TdoTGuide.Admin.Server.IntegrationTests.Utils;
+﻿using TdoTGuide.Admin.Server.IntegrationTests.Utils;
+using TdoTGuide.Server.Common;
 using Testcontainers.PostgreSql;
 
 namespace TdoTGuide.Admin.Server.IntegrationTests;

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
-using TdoTGuide.Admin.Server.Data;
-using System.Globalization;
 using Minio;
+using System.Globalization;
+using TdoTGuide.Server.Common;
 
 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-AT");
 
