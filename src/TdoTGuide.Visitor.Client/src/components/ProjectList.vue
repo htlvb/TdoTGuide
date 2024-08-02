@@ -18,6 +18,9 @@ const selectDepartment = (departmentId: string) => {
     const index = selectedDepartments.value.indexOf(departmentId)
     if (index >= 0) {
       selectedDepartments.value.splice(index, 1)
+      if (selectedDepartments.value.length === 0) {
+        selectedDepartments.value = undefined
+      }
     }
     else {
       selectedDepartments.value.push(departmentId)
