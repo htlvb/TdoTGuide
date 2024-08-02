@@ -4,14 +4,14 @@ name: Publish
 on:
   # Automatically trigger it when detected changes in repo
   push:
-    branches: 
+    branches:
       [ main ]
     paths:
     - '**'
     - '.github/workflows/publish.yml'
 
-  # Allow manual trigger 
-  workflow_dispatch:      
+  # Allow manual trigger
+  workflow_dispatch:
 
 permissions:
   packages: write
@@ -31,7 +31,7 @@ jobs:
 
       - name: Initialize
         run: ./init.sh
-        
+
       - name: Build tailwind
         run: ./build-tailwind.sh
 
@@ -45,10 +45,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push container image to registry
+      - name: Build and push admin app container image to registry
         uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./src/TdoTGuide.Admin.Server/Dockerfile
           push: true
-          tags: ghcr.io/htlvb/tdot-guide:${{ github.sha }}
+          tags: ghcr.io/htlvb/tdot-guide-admin:${{ github.sha }}
+
+      - name: Build and push visitor app container image to registry
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./src/TdoTGuide.Visitor.Server/Dockerfile
+          push: true
+          tags: ghcr.io/htlvb/tdot-guide-visitor:${{ github.sha }}

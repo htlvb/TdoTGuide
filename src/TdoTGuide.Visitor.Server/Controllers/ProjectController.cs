@@ -8,14 +8,18 @@ namespace TdoTGuide.Visitor.Server.Controllers;
 public class ProjectController(
     IProjectStore projectStore,
     IDepartmentStore departmentStore,
-    IProjectMediaStore projectMediaStore) : ControllerBase
+    IProjectMediaStore projectMediaStore,
+    IHostEnvironment env) : ControllerBase
 {
     [HttpGet("")]
-    public async Task<List<ProjectDto>> GetProjectList()
+    public async Task<ProjectListDto> GetProjectList()
     {
+        if (env.IsDevelopment() && Random.Shared.NextDouble() > 0.9) {
+            await Task.Delay(5000);
+            throw new Exception("Chaos engineering exception");
+        }
         var projects = await projectStore.GetAll().ToList();
         var departments = await departmentStore.GetDepartments();
-        var departmentDtoLookup = departments.ToDictionary(v => v.Id, GetDepartmentDtoFromDomain);
         var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);
         var projectDtos = new List<ProjectDto>();
         foreach (var project in projects)
@@ -24,22 +28,25 @@ public class ProjectController(
             {
                 media = [];
             }
-            var projectDto = GetProjectDtoFromProject(project, departmentDtoLookup, media);
+            var projectDto = GetProjectDtoFromProject(project, media);
+            projectDto.Departments.Sort((d1, d2) => departments.FindIndex(v => v.Id == d1).CompareTo(departments.FindIndex(v => v.Id == d2)));
             projectDtos.Add(projectDto);
         }
-        return projectDtos;
+        return new ProjectListDto(
+            projectDtos,
+            [.. departments.Select(GetDepartmentDtoFromDomain)]
+        );
     }
 
     private ProjectDto GetProjectDtoFromProject(
         Project project,
-        IReadOnlyDictionary<string, DepartmentDto> departmentLookup,
         List<ProjectMedia> media)
     {
         return new ProjectDto(
             project.Title,
             project.Description,
             project.Group,
-            [.. project.Departments.Select(v => departmentLookup.TryGetValue(v, out var result) ? result : null).OfType<DepartmentDto>()],
+            [.. project.Departments],
             project.Location,
             project.TimeSelection.Accept(new TimeSelectionToDtoVisitor()),
             [.. media.Select(GetProjectMediaDtoFromDomain)]
@@ -48,7 +55,7 @@ public class ProjectController(
 
     private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
     {
-        return new(department.Name, department.Color);
+        return new(department.Id, department.Name, department.LongName, department.Color);
     }
 
     private ProjectMediaDto GetProjectMediaDtoFromDomain(ProjectMedia media)

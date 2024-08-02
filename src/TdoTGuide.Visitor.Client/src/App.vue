@@ -1,49 +1,34 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { ref } from 'vue'
+import uiFetch from './UIFetch'
+import ErrorWithRetry from './components/ErrorWithRetry.vue'
+import LoadingBar from './components/LoadingBar.vue'
+import ProjectList from './components/ProjectList.vue'
+import type { Dto } from './Types'
 
-
+const projectList = ref<Dto.ProjectList>()
+const isLoadingProjects = ref(false)
+const hasLoadingProjectsFailed = ref(false)
+const loadProjects = async () => {
+  const fetchResult = await uiFetch(isLoadingProjects, hasLoadingProjectsFailed, "/api/projects")
+  if (fetchResult.succeeded) {
+    projectList.value = await fetchResult.response.json()
+  }
+}
+loadProjects()
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
+  <header class="p-8 bg-htlvb flex items-center gap-4">
+    <img alt="HTLVB Logo" class="logo h-[35px] md:h-[50px]" src="./assets/logo.svg" />
+    <h1 class="text-2xl md:text-5xl text-white">TdoT@HTLVB</h1>
   </header>
 
-  <main>
-    <TheWelcome />
+  <main class="dark:bg-stone-800 dark:text-white">
+    <div class="max-w-screen-lg mx-auto">
+      <LoadingBar v-if="isLoadingProjects" class="p-8" />
+      <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
+      <ProjectList v-else-if="projectList !== undefined" :projects="projectList.projects" :departments="projectList.departments" class="p-4" />
+    </div>
   </main>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>

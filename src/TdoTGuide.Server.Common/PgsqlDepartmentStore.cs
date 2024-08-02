@@ -18,7 +18,7 @@ public class PgsqlDepartmentStore : IDepartmentStore, IDisposable
     public async Task<List<Department>> GetDepartments()
     {
         await using var dbConnection = await dataSource.OpenConnectionAsync();
-        var dbDepartments = await dbConnection.QueryAsync<DbDepartment>("SELECT id, name, color FROM department ORDER BY name");
+        var dbDepartments = await dbConnection.QueryAsync<DbDepartment>("SELECT id, name, long_name longName, color FROM department ORDER BY name");
         return dbDepartments.Select(v => v.ToDomain()).ToList();
     }
 
@@ -31,11 +31,12 @@ public class PgsqlDepartmentStore : IDepartmentStore, IDisposable
     {
         public required string Id { get; set; }
         public required string Name { get; set; }
+        public required string LongName { get; set; }
         public required string Color { get; set; }
 
         public Department ToDomain()
         {
-            return new(Id, Name, Color);
+            return new(Id, Name, LongName, Color);
         }
     }
 }

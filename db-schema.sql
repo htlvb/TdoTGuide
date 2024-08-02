@@ -32,3 +32,13 @@ ALTER TABLE project ALTER COLUMN departments SET NOT NULL;
 ALTER TABLE project ADD COLUMN "group" VARCHAR;
 UPDATE project SET "group"='';
 ALTER TABLE project ALTER COLUMN "group" SET NOT NULL;
+
+-- Add department long name
+ALTER TABLE department ADD COLUMN "long_name" VARCHAR;
+UPDATE department SET long_name='Maschinenbau - Anlagentechnik' WHERE name='MB';
+UPDATE department SET long_name='Mechatronik' WHERE name='ME';
+UPDATE department SET long_name='Fachschule Maschinenbau' WHERE name='FS';
+UPDATE department SET long_name='Gebäudetechnik' WHERE name='GT';
+UPDATE department SET long_name='Industrial Engineering and Management' WHERE name='IEM';
+UPDATE department SET long_name='Industrial Engineering and Informatics' WHERE name='IEI';
+ALTER TABLE department ALTER COLUMN long_name SET NOT NULL;

@@ -8,12 +8,12 @@ public class InMemoryDepartmentStore : IDepartmentStore
     {
         await Task.Yield();
         return [
-            new("1", "MB", "#183c7b"),
-            new("2", "ME", "#ad1410"),
-            new("3", "FS", "#009ec6"),
-            new("4", "GT", "#008040"),
-            new("5", "IEM", "#e78a00"),
-            new("6", "IEI", "#6b1c52")
+            new("1", "MB", "Maschinenbau - Anlagentechnik", "#183c7b"),
+            new("2", "ME", "Mechatronik", "#ad1410"),
+            new("3", "FS", "Fachschule Maschinenbau", "#009ec6"),
+            new("4", "GT", "Gebäudetechnik", "#008040"),
+            new("5", "IEM", "Industrial Engineering and Management", "#e78a00"),
+            new("6", "IEI", "Industrial Engineering and Informatics", "#6b1c52")
         ];
     }
 }
