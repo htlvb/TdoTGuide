@@ -25,7 +25,7 @@ const getRegularTimeSelectionText = (intervalMinutes: number) => {
   <div>
     <h3>{{ project.title }}</h3>
     <p>{{ project.description }}</p>
-    <div v-if="projectDepartments.length > 0" class="flex gap-2">
+    <div v-if="projectDepartments.length > 0" class="flex flex-wrap gap-2">
       <ExpandableName v-for="department in projectDepartments" :key="department.id" :short-name="department.name" :long-name="department.longName" class="button !text-white" :style="{ 'background-color': department.color}" />
     </div>
     <p>
