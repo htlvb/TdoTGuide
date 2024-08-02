@@ -20,7 +20,7 @@ loadProjects()
 
 <template>
   <header class="p-8 bg-htlvb flex items-center gap-4">
-    <img alt="HTLVB Logo" class="logo h-[35px] md:h-[50px]" src="./assets/logo.svg" />
+    <img alt="HTLVB Logo" class="logo w-[90px] md:w-[120px]" src="./assets/logo.svg" />
     <h1 class="text-2xl md:text-5xl text-white">TdoT@HTLVB</h1>
   </header>
 
