@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import type { Dto } from '@/Types'
 import ProjectListItem from './ProjectListItem.vue'
 import _ from 'lodash-es'
+import { useTourStore } from '@/stores/tour';
 
 const props = defineProps<{
   projects: Dto.Project[]
@@ -28,10 +29,20 @@ const selectDepartment = (departmentId: string) => {
   }
 }
 
-const filteredProjects = computed(() => {
-  if (selectedDepartments.value === undefined) return props.projects
+const tourStore = useTourStore()
 
-  return props.projects.filter(project =>
+const showMyTour = ref(false)
+
+const filteredProjects = computed(() => {
+  let result = props.projects
+
+  if (showMyTour.value) {
+    result = result.filter(project => tourStore.projects.indexOf(project) >= 0)
+  }
+
+  if (selectedDepartments.value === undefined) return result
+
+  return result.filter(project =>
     project.departments.length === 0
     || _.intersection(project.departments, selectedDepartments.value).length > 0
   )
@@ -39,22 +50,23 @@ const filteredProjects = computed(() => {
 </script>
 
 <template>
-  <div class="p-4">
+  <div>
     <div class="flex flex-col items-center gap-2">
       <span>Für welche Abteilungen interessierst du dich?</span>
       <div class="flex flex-row flex-wrap justify-center gap-2">
-        <a v-for="department in departments" :key="department.id"
+        <button v-for="department in departments" :key="department.id"
           @click="() => selectDepartment(department.id)"
-          class="button !text-white"
-          :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</a>
+          class="button text-white"
+          :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
       </div>
+      <button :disabled="!showMyTour && tourStore.projects.length === 0" :class="['button', 'mt-4', 'self-start', { 'button-htlvb-selected': showMyTour }]" @click="showMyTour = !showMyTour">Nur meine Projekte anzeigen</button>
     </div>
     <div class="flex flex-col gap-4 mt-4">
       <span v-if="filteredProjects.length === 0" class="self-center">
         😥 Keine Angebote gefunden
       </span>
       <ProjectListItem v-for="project in filteredProjects" :key="JSON.stringify(project)" :project="project"
-        :departments="departments" class="border rounded p-4 flex flex-col gap-2" />
+        :departments="departments" />
     </div>
   </div>
 </template>

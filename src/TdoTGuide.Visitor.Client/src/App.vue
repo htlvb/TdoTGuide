@@ -19,9 +19,9 @@ loadProjects()
 </script>
 
 <template>
-  <header class="p-6 md:p-8 bg-htlvb flex items-center gap-4">
+  <header class="p-6 md:p-8 bg-htlvb flex items-center gap-4 text-white">
     <img alt="HTLVB Logo" class="logo w-[90px] md:w-[120px]" src="./assets/logo.svg" />
-    <h1 class="text-2xl md:text-5xl text-white">TdoT@HTLVB</h1>
+    <h1 class="text-2xl md:text-5xl">TdoT@HTLVB</h1>
   </header>
 
   <main class="dark:bg-stone-800 dark:text-white">
