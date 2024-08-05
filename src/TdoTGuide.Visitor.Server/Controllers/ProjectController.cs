@@ -43,6 +43,7 @@ public class ProjectController(
         List<ProjectMedia> media)
     {
         return new ProjectDto(
+            project.Id,
             project.Title,
             project.Description,
             project.Group,

@@ -5,6 +5,7 @@ export module Dto {
   }
 
   export type Project = {
+    id: string
     title: string
     description: string
     group: string

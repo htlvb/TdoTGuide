@@ -54,7 +54,7 @@ const getRegularTimeSelectionText = (intervalMinutes: number) => {
         <p><span class="font-bold">Wo:</span> {{ project.location }}</p>
       </div>
       <div class="flex items-center">
-        <a :class="['button', 'text-nowrap', { 'button-htlvb-selected': tourStore.projects.indexOf(project) >= 0 }]" @click="tourStore.toggleAdd(project)">Das interessiert mich</a>
+        <a :class="['button', 'text-nowrap', { 'button-htlvb-selected': tourStore.projectIds.indexOf(project.id) >= 0 }]" @click="tourStore.toggleAdd(project.id)">Das interessiert mich</a>
       </div>
     </div>
     <div class="flex flex-row flex-wrap gap-2">

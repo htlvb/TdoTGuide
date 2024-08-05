@@ -6,6 +6,7 @@ public record ProjectListDto(
 );
 
 public record ProjectDto(
+    string Id,
     string Title,
     string Description,
     string Group,
