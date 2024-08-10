@@ -57,7 +57,7 @@ namespace TdoTGuide.Server.Common
 
     public class IndividualTimeSelection(List<DateTime> times) : ITimeSelection, IEquatable<IndividualTimeSelection>
     {
-        public IReadOnlyCollection<DateTime> Times { get; } = [.. times];
+        public IReadOnlyCollection<DateTime> Times { get; } = [.. times.Order()];
 
         public T Accept<T>(ITimeSelectionVisitor<T> visitor)
         {

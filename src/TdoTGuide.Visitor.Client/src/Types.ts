@@ -25,7 +25,7 @@ export module Dto {
   export type TimeSelection = {
     type: TimeSelectionType
     regularIntervalMinutes: number
-    individualTimes: Date[]
+    individualTimes: string[]
   }
 
   export type TimeSelectionType = 'Continuous' | 'Regular' | 'Individual'

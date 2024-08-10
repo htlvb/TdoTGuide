@@ -3,6 +3,8 @@ import type { Dto } from '@/Types'
 import ExpandableName from './ExpandableName.vue'
 import { useTourStore } from '@/stores/tour'
 import MarkdownIt from 'markdown-it'
+import _, { type Dictionary } from 'lodash'
+import { computed } from 'vue'
 
 const props = defineProps<{
   project: Dto.Project,
@@ -32,6 +34,11 @@ const getRegularTimeSelectionText = (intervalMinutes: number) => {
   else if (intervalMinutes % 60 === 0) return `alle ${intervalMinutes / 60} Stunden`
   else `alle ${intervalMinutes} Minuten`
 }
+const individualTimeGroups = computed(() => {
+  if (props.project.timeSelection.type !== 'Individual') return {};
+
+  return _.groupBy(props.project.timeSelection.individualTimes, v => new Date(v).toLocaleDateString());
+})
 </script>
 
 <template>
@@ -48,7 +55,12 @@ const getRegularTimeSelectionText = (intervalMinutes: number) => {
           <span v-if="project.timeSelection.type === 'Continuous'">laufend</span>
           <span v-else-if="project.timeSelection.type === 'Regular'">{{ getRegularTimeSelectionText(project.timeSelection.regularIntervalMinutes) }}</span>
           <ul v-else-if="project.timeSelection.type === 'Individual'" class="list-disc list-inside">
-            <li v-for="time in project.timeSelection.individualTimes" :key="time.toISOString()">{{ time.toLocaleString() }}</li>
+            <li v-for="(times, date) in individualTimeGroups" :key="date">
+              {{ date }}
+              <ul class="list-disc list-inside pl-4">
+                <li v-for="time in times" :key="time">{{ new Date(time).toLocaleTimeString([], {'timeStyle': 'short'}) }}</li>
+              </ul>
+            </li>
           </ul>
         </p>
         <p><span class="font-bold">Wo:</span> {{ project.location }}</p>
