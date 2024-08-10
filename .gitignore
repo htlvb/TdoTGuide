@@ -9,3 +9,4 @@ obj/
 /TdoTGuide.Web/wwwroot/css/app.min.css
 /TdoTGuide.SampleDataGenerator/AttendeeCandidates.json
 /TdoTGuide.SampleDataGenerator/OrganizerCandidates.json
+/utils/TdotGuide.Utils.GenerateSampleProjects/organizer-candidates.json

@@ -1,0 +1,72 @@
+[
+    {
+        "name": "3D-Druck",
+        "group": "Technik",
+        "location": "R001",
+        "description": "Entdecken Sie die **Welt des 3D-Drucks** und lernen Sie, wie aus digitalen Modellen reale Objekte werden.",
+        "departments": ["1", "2", "3"]
+    },
+    {
+        "name": "Robotik und Automation",
+        "group": "Technik",
+        "location": "L105",
+        "description": "Erleben Sie in unserer **Robotik-Demonstration** die Zukunft der Automatisierung.",
+        "departments": ["2", "3", "5"]
+    },
+    {
+        "name": "Energieeffizienz im Gebäude",
+        "group": "Gebaeudetechnik",
+        "location": "W032",
+        "description": "Erfahren Sie mehr über **moderne Lösungen** zur Steigerung der Energieeffizienz in Gebäuden.",
+        "departments": ["4"]
+    },
+    {
+        "name": "CNC-Fräsen",
+        "group": "Technik",
+        "location": "R002",
+        "description": "Eine **Live-Demonstration** unserer CNC-Fräsmaschinen - Präzision trifft auf Technologie.",
+        "departments": ["1", "3"]
+    },
+    {
+        "name": "Industrielle Messtechnik",
+        "group": "Technik",
+        "location": "L106",
+        "description": "Erfahren Sie, wie **präzise Messverfahren** in der Industrie angewendet werden.",
+        "departments": ["2", "3", "5"]
+    },
+    {
+        "name": "Nachhaltige Produktionsprozesse",
+        "group": "Industrial Engineering",
+        "location": "W033",
+        "description": "Lernen Sie, wie **Nachhaltigkeit** in der industriellen Produktion umgesetzt wird.",
+        "departments": ["5", "6"]
+    },
+    {
+        "name": "Gebäudetechnik 4.0",
+        "group": "Gebaeudetechnik",
+        "location": "W034",
+        "description": "Entdecken Sie **intelligente Systeme** für das Gebäudemanagement der Zukunft.",
+        "departments": ["4", "6"]
+    },
+    {
+        "name": "Industrielle Informatik",
+        "group": "Informatik",
+        "location": "R003",
+        "description": "Erfahren Sie, wie **Softwarelösungen** die Industrie revolutionieren.",
+        "departments": ["6"]
+    },
+    {
+        "name": "Automatisierungstechnik",
+        "group": "Technik",
+        "location": "L107",
+        "description": "Einblick in die **Automatisierungstechnik** - von der Theorie zur Praxis.",
+        "departments": ["2", "5"]
+    },
+    {
+        "name": "Anlagentechnik im Maschinenbau",
+        "group": "Technik",
+        "location": "R004",
+        "description": "Lernen Sie die **Anlagentechnik** im Maschinenbau und ihre Herausforderungen kennen.",
+        "departments": ["1", "3"]
+    }
+]
