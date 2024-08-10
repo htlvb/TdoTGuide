@@ -69,7 +69,7 @@ const individualTimeGroups = computed(() => {
         <a :class="['button', 'text-nowrap', { 'button-htlvb-selected': tourStore.projectIds.indexOf(project.id) >= 0 }]" @click="tourStore.toggleAdd(project.id)">Das interessiert mich</a>
       </div>
     </div>
-    <div class="flex flex-row flex-wrap gap-2">
+    <div class="flex flex-row flex-wrap items-center gap-2">
       <template v-for="media in project.media" :key="media.url">
         <img v-if="media.type === 'Image'" :src="media.url" width="200" />
         <video v-else-if="media.type === 'Video'" :src="media.url" width="300" controls></video>
