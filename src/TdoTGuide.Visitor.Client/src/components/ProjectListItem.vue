@@ -43,7 +43,7 @@ const individualTimeGroups = computed(() => {
 
 <template>
   <div class="border rounded p-4 flex flex-col gap-2">
-    <div class="flex flex-row">
+    <div class="flex flex-row gap-4">
       <div class="flex flex-col gap-2 grow">
         <h3 class="text-xl">{{ project.title }}</h3>
         <p class="description" v-html="projectDescription"></p>
