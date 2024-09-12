@@ -4,7 +4,7 @@
         string Id,
         string Title,
         string Description,
-        string Group,
+        string? Group,
         IReadOnlyList<string> Departments,
         string Location,
         ProjectOrganizer Organizer,

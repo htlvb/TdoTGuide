@@ -51,7 +51,7 @@ namespace TdoTGuide.Server.Common
         public async IAsyncEnumerable<string> GetProjectGroups()
         {
             await using var dbConnection = await dataSource.OpenConnectionAsync();
-            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT \"group\" FROM project ORDER BY \"group\"");
+            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT \"group\" FROM project WHERE \"group\" IS NOT NULL ORDER BY \"group\"");
             foreach (var group in groups)
             {
                 yield return group;
@@ -117,7 +117,7 @@ namespace TdoTGuide.Server.Common
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("group", project.Group);
+            cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
@@ -132,7 +132,7 @@ namespace TdoTGuide.Server.Common
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("group", project.Group);
+            cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
@@ -232,7 +232,7 @@ namespace TdoTGuide.Server.Common
             Guid Id,
             string Title,
             string Description,
-            string Group,
+            string? Group,
             IReadOnlyCollection<int> Departments,
             string Location,
             DbProjectOrganizer Organizer,
@@ -246,7 +246,7 @@ namespace TdoTGuide.Server.Common
                     reader.GetGuid(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.GetString(3),
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
                     reader.GetFieldValue<int[]>(4),
                     reader.GetString(5),
                     reader.GetFieldValue<DbProjectOrganizer>(6),

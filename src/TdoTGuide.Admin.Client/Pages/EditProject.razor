@@ -55,6 +55,7 @@ else if (editingProject.Links.Save != null)
                 <label class="block">
                     <span class="input-label">Gruppe</span>
                     <InputText @bind-Value=editingProject.Data.Group list="project-groups" class="input-text w-full md:w-96" />
+                    <span class="text-xs">Aus bestehenden Gruppen wählen, neue definieren (z.B. Werkstätten, Mädchen in der Technik), oder frei lassen</span>
                     <datalist id="project-groups">
                         @foreach (var groupName in editingProject.AllGroups)
                         {
@@ -325,7 +326,6 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
-        [Required(ErrorMessage = "Gruppe darf nicht leer sein.")]
         public required string Group { get; set; }
         public required List<string> Departments { get; init; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
@@ -344,7 +344,7 @@ else if (editingProject.Links.Save != null)
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
-                Group = projectData.Group,
+                Group = projectData.Group ?? "",
                 Departments = [.. projectData.Departments],
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,

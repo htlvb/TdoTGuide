@@ -14,7 +14,7 @@ namespace TdoTGuide.Admin.Shared
     public record EditingProjectDataDto(
         string Title,
         string Description,
-        string Group,
+        string? Group,
         IReadOnlyList<string> Departments,
         IReadOnlyList<string> MediaFileNames,
         IReadOnlyList<string> MediaFileNamesToRemove,
@@ -54,7 +54,7 @@ namespace TdoTGuide.Admin.Shared
     public record ProjectDto(
         string Title,
         string Description,
-        string Group,
+        string? Group,
         IReadOnlyList<string> Departments,
         string Location,
         ProjectOrganizerDto Organizer,

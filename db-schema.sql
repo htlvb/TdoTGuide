@@ -42,3 +42,6 @@ UPDATE department SET long_name='Gebäudetechnik' WHERE name='GT';
 UPDATE department SET long_name='Industrial Engineering and Management' WHERE name='IEM';
 UPDATE department SET long_name='Industrial Engineering and Informatics' WHERE name='IEI';
 ALTER TABLE department ALTER COLUMN long_name SET NOT NULL;
+
+-- Allow empty project group
+ALTER TABLE project ALTER COLUMN "group" DROP NOT NULL;

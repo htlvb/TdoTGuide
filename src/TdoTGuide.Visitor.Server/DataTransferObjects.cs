@@ -9,7 +9,7 @@ public record ProjectDto(
     string Id,
     string Title,
     string Description,
-    string Group,
+    string? Group,
     List<string> Departments,
     string Location,
     TimeSelectionDto TimeSelection,

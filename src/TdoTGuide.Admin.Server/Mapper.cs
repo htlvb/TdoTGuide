@@ -18,12 +18,6 @@ public static class Mapper
             errorMessage = "Project title must not be empty.";
             return false;
         }
-        if (string.IsNullOrWhiteSpace(projectData.Group))
-        {
-            project = null;
-            errorMessage = "Project group must not be empty.";
-            return false;
-        }
         if (!organizerCandidates.TryGetValue(projectData.OrganizerId, out var organizer))
         {
             project = null;
@@ -78,7 +72,7 @@ public static class Mapper
             projectId,
             projectData.Title,
             projectData.Description,
-            projectData.Group,
+            string.IsNullOrWhiteSpace(projectData.Group) ? null : projectData.Group,
             projectData.Departments,
             projectData.Location,
             organizer,

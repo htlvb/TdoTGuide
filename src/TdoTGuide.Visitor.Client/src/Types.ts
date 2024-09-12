@@ -8,7 +8,7 @@ export module Dto {
     id: string
     title: string
     description: string
-    group: string
+    group: string | null
     departments: string[]
     location: string
     timeSelection: TimeSelection
