@@ -70,14 +70,14 @@ const filteredProjects = computed(() => {
   <div>
     <div class="flex flex-col items-center gap-2">
       <p class="text-2xl mb-2">Für welche Abteilungen interessierst du dich?</p>
-      <div class="flex flex-row flex-wrap justify-center gap-2">
+      <div class="flex flex-row flex-wrap justify-center gap-2 mb-4">
         <button v-for="department in departments" :key="department.id"
           @click="() => selectDepartment(department.id)"
           class="button text-white"
           :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
       </div>
       <p class="text-2xl mb-2">Für welches Gebäude interessierst du dich?</p>
-      <div class="flex flex-row flex-wrap justify-center gap-2">
+      <div class="flex flex-row flex-wrap justify-center gap-2 mb-4">
         <button v-for="building in buildings" :key="building.id"
           @click="() => selectBuilding(building.id)"
           class="button text-white"
