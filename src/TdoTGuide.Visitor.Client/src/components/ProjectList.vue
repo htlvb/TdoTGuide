@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import type { Dto } from '@/Types'
 import ProjectListItem from './ProjectListItem.vue'
 import _ from 'lodash-es'
-import { useTourStore } from '@/stores/tour';
 
 const props = defineProps<{
   projects: Dto.Project[]
@@ -29,16 +28,8 @@ const selectDepartment = (departmentId: string) => {
   }
 }
 
-const tourStore = useTourStore()
-
-const showMyTour = ref(tourStore.projectIds.length > 0)
-
 const filteredProjects = computed(() => {
   let result = props.projects
-
-  if (showMyTour.value) {
-    result = result.filter(project => tourStore.projectIds.indexOf(project.id) >= 0)
-  }
 
   if (selectedDepartments.value === undefined) return result
 
@@ -59,7 +50,6 @@ const filteredProjects = computed(() => {
           class="button text-white"
           :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
       </div>
-      <button :disabled="!showMyTour && tourStore.projectIds.length === 0" :class="['button', 'mt-4', 'self-start', { 'button-htlvb-selected': showMyTour }]" @click="showMyTour = !showMyTour">Nur meine Projekte anzeigen</button>
     </div>
     <div class="flex flex-col gap-4 mt-4">
       <span v-if="filteredProjects.length === 0" class="self-center">

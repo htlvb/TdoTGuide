@@ -1,2 +1,2 @@
 # TdoT Guide
-Web app for creating a personal tour on the open day.
+Web app for exploring offers on the open day.
