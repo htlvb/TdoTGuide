@@ -10,32 +10,15 @@ namespace TdoTGuide.Admin.Server.Controllers
     [ApiController]
     [Authorize]
     [Route("api/projects")]
-    public class ProjectController : ControllerBase
+    public class ProjectController(
+        IProjectStore projectStore,
+        IDepartmentStore departmentStore,
+        IBuildingStore buildingStore,
+        IProjectMediaStore projectMediaStore,
+        IUserStore userStore,
+        IAuthorizationService authService) : ControllerBase
     {
-        private readonly IProjectStore projectStore;
-        private readonly IDepartmentStore departmentStore;
-        private readonly IProjectMediaStore projectMediaStore;
-        private readonly IUserStore userStore;
-        private readonly IAuthorizationService authService;
-        private readonly IOptions<JsonOptions> jsonOptions;
-
         private string UserId => HttpContext.User.GetObjectId()!;
-
-        public ProjectController(
-            IProjectStore projectStore,
-            IDepartmentStore departmentStore,
-            IProjectMediaStore projectMediaStore,
-            IUserStore userStore,
-            IAuthorizationService authService,
-            IOptions<JsonOptions> jsonOptions)
-        {
-            this.projectStore = projectStore;
-            this.projectMediaStore = projectMediaStore;
-            this.userStore = userStore;
-            this.authService = authService;
-            this.jsonOptions = jsonOptions;
-            this.departmentStore = departmentStore;
-        }
 
         [HttpGet("")]
         [Authorize("ListProjects")]
@@ -55,9 +38,11 @@ namespace TdoTGuide.Admin.Server.Controllers
             }
             var canCreateProject = (await authService.AuthorizeAsync(HttpContext.User, "CreateProject")).Succeeded;
             var departments = await departmentStore.GetDepartments();
+            var buildings = await buildingStore.GetBuildings();
             return new ProjectListDto(
                 projectDtos,
                 [.. departments.Select(GetDepartmentDtoFromDomain)],
+                [.. buildings.Select(GetBuildingDtoFromDomain)],
                 new ProjectListLinksDto(
                     canCreateProject ? "projects/new" : default
                 )
@@ -93,22 +78,25 @@ namespace TdoTGuide.Admin.Server.Controllers
 
                 var projectGroups = await projectStore.GetProjectGroups().ToList();
                 var departments = await departmentStore.GetDepartments();
+                var buildings = await buildingStore.GetBuildings();
 
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
-                        "",
-                        "",
-                        "",
-                        [],
-                        [],
-                        [],
-                        "",
-                        UserId,
-                        Array.Empty<string>(),
-                        new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+                        Title: "",
+                        Description: "",
+                        Group: "",
+                        Departments: [],
+                        MediaFileNames: [],
+                        MediaFileNamesToRemove: [],
+                        Building: null,
+                        Location: "",
+                        OrganizerId: UserId,
+                        CoOrganizerIds: Array.Empty<string>(),
+                        TimeSelection: new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
                     ),
                     projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
+                    [.. buildings.Select(GetBuildingDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -131,6 +119,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                 var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
                 var projectGroups = await projectStore.GetProjectGroups().ToList();
                 var departments = await departmentStore.GetDepartments();
+                var buildings = await buildingStore.GetBuildings();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
@@ -139,6 +128,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         project.Departments,
                         projectMediaNames,
                         [],
+                        project.Building,
                         project.Location,
                         project.Organizer.Id,
                         project.CoOrganizers.Select(v => v.Id).ToArray(),
@@ -146,6 +136,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                     ),
                     projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
+                    [.. buildings.Select(GetBuildingDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -257,6 +248,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                 project.Description,
                 project.Group,
                 project.Departments,
+                project.Building,
                 project.Location,
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
@@ -284,6 +276,11 @@ namespace TdoTGuide.Admin.Server.Controllers
         private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
         {
             return new(department.Id, department.Name, department.Color);
+        }
+
+        private static BuildingDto GetBuildingDtoFromDomain(Building building)
+        {
+            return new(building.Id, building.Name);
         }
 
         private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>

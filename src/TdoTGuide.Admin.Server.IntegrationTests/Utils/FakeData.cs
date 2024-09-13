@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Microsoft.Graph.Models.CallRecords;
 using TdoTGuide.Admin.Shared;
 using TdoTGuide.Server.Common;
 
@@ -31,15 +32,16 @@ public static class FakeData
                 .Take(v.Random.Number(1, 5))
                 .ToList();
             return new Project(
-                v.Random.Uuid().ToString(),
-                v.Random.Words(),
-                v.Lorem.Sentences(),
-                v.Random.Word(),
-                v.Random.ArrayElements([.. Enumerable.Range(1, 10).Select(v => $"{v}")]),
-                v.Address.BuildingNumber(),
-                organizers.First(),
-                organizers.Skip(1).ToList(),
-                timeSelection
+                Id: v.Random.Uuid().ToString(),
+                Title: v.Random.Words(),
+                Description: v.Lorem.Sentences(),
+                Group: v.Random.Word(),
+                Departments: v.Random.ArrayElements([.. Enumerable.Range(1, 10).Select(v => $"{v}")]),
+                Building: v.Random.Int(1, 3).ToString(),
+                Location: v.Address.BuildingNumber(),
+                Organizer: organizers.First(),
+                CoOrganizers: organizers.Skip(1).ToList(),
+                TimeSelection: timeSelection
             );
         });
 
@@ -79,16 +81,17 @@ public static class FakeData
                     .ToList();
             var timeSelection = new TimeSelectionDto(timeType, regularTimeSelectionInterval, individualTimes);
             return new EditingProjectDataDto(
-                v.Random.Words(),
-                v.Lorem.Sentences(),
-                v.Random.Word(),
-                v.Random.ArrayElements([.. Enumerable.Range(0, 10).Select(v => $"{v}")]),
-                v.Random.WordsArray(0, 5),
-                v.Random.WordsArray(0, 5),
-                v.Address.BuildingNumber(),
-                organizerIds.First(),
-                organizerIds.Skip(1).ToList(),
-                timeSelection
+                Title: v.Random.Words(),
+                Description: v.Lorem.Sentences(),
+                Group: v.Random.Word(),
+                Departments: v.Random.ArrayElements([.. Enumerable.Range(0, 10).Select(v => $"{v}")]),
+                MediaFileNames: v.Random.WordsArray(0, 5),
+                MediaFileNamesToRemove: v.Random.WordsArray(0, 5),
+                Building: v.Random.Int(1, 3).ToString(),
+                Location: v.Address.BuildingNumber(),
+                OrganizerId: organizerIds.First(),
+                CoOrganizerIds: organizerIds.Skip(1).ToList(),
+                TimeSelection: timeSelection
             );
         });
 

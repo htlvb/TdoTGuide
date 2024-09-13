@@ -6,6 +6,7 @@ namespace TdoTGuide.Admin.Shared
         EditingProjectDataDto Data,
         IReadOnlyList<string> AllGroups,
         IReadOnlyList<DepartmentDto> AllDepartments,
+        IReadOnlyList<BuildingDto> AllBuildings,
         IReadOnlyList<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -18,6 +19,7 @@ namespace TdoTGuide.Admin.Shared
         IReadOnlyList<string> Departments,
         IReadOnlyList<string> MediaFileNames,
         IReadOnlyList<string> MediaFileNamesToRemove,
+        string? Building,
         string Location,
         string OrganizerId,
         IReadOnlyList<string> CoOrganizerIds,
@@ -44,6 +46,7 @@ namespace TdoTGuide.Admin.Shared
     public record ProjectListDto(
         IReadOnlyList<ProjectDto> Projects,
         IReadOnlyList<DepartmentDto> AllDepartments,
+        IReadOnlyList<BuildingDto> AllBuildings,
         ProjectListLinksDto Links
     );
 
@@ -56,6 +59,7 @@ namespace TdoTGuide.Admin.Shared
         string Description,
         string? Group,
         IReadOnlyList<string> Departments,
+        string Building,
         string Location,
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,
@@ -74,6 +78,11 @@ namespace TdoTGuide.Admin.Shared
         string Id,
         string Name,
         string Color
+    );
+
+    public record BuildingDto(
+        string Id,
+        string Name
     );
 
     public record ProjectOrganizerDto(

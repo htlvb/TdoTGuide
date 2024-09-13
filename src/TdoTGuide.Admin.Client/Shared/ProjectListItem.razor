@@ -48,7 +48,7 @@
                         </ul>
                     }
                 </div>
-                <span class="text-sm text-gray-600">@Project.Location</span>
+                <span class="text-sm text-gray-600">@Project.Location (@(AllBuildings.FirstOrDefault(v => v.Id == Project.Building)?.Name ?? "unbekanntes Gebäude"))</span>
             </div>
             <div class="grow flex flex-col p-2">
                 <div class="description grow">
@@ -117,6 +117,9 @@
 
     [Parameter]
     public IReadOnlyList<DepartmentDto> AllDepartments { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<BuildingDto> AllBuildings { get; set; } = [];
 
     public MarkupString ProjectDescription
     {

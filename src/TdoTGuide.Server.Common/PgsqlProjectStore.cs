@@ -91,7 +91,7 @@ namespace TdoTGuide.Server.Common
 
         private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, building, location, organizer, co_organizers, time_selection FROM project", dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -101,7 +101,7 @@ namespace TdoTGuide.Server.Common
 
         private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, building, location, organizer, co_organizers, time_selection FROM project WHERE id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
@@ -113,12 +113,13 @@ namespace TdoTGuide.Server.Common
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, \"group\", departments, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @group, @departments, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, \"group\", departments, building, location, organizer, co_organizers, time_selection) VALUES (@id, @title, @description, @group, @departments, @building, @location, @organizer, @co_organizers, @time_selection)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
+            cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -128,12 +129,13 @@ namespace TdoTGuide.Server.Common
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, \"group\"=@group, departments=@departments, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, \"group\"=@group, departments=@departments, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers, time_selection=@time_selection WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
+            cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -234,6 +236,7 @@ namespace TdoTGuide.Server.Common
             string Description,
             string? Group,
             IReadOnlyCollection<int> Departments,
+            int Building,
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers,
@@ -248,10 +251,11 @@ namespace TdoTGuide.Server.Common
                     reader.GetString(2),
                     reader.IsDBNull(3) ? null : reader.GetString(3),
                     reader.GetFieldValue<int[]>(4),
-                    reader.GetString(5),
-                    reader.GetFieldValue<DbProjectOrganizer>(6),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(7),
-                    reader.GetFieldValue<DbTimeSelection>(8)
+                    reader.GetInt32(5),
+                    reader.GetString(6),
+                    reader.GetFieldValue<DbProjectOrganizer>(7),
+                    reader.GetFieldValue<DbProjectOrganizer[]>(8),
+                    reader.GetFieldValue<DbTimeSelection>(9)
                 );
             }
 
@@ -263,6 +267,7 @@ namespace TdoTGuide.Server.Common
                     project.Description,
                     project.Group,
                     [.. project.Departments.Select(int.Parse)],
+                    int.Parse(project.Building),
                     project.Location,
                     DbProjectOrganizer.FromDomain(project.Organizer),
                     project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList(),
@@ -278,6 +283,7 @@ namespace TdoTGuide.Server.Common
                     Description,
                     Group,
                     [.. Departments.Select(v => $"{v}")],
+                    $"{Building}",
                     Location,
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList(),

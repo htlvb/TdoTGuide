@@ -68,6 +68,7 @@ foreach (var projectData in projects) {
         projectData.Description,
         projectData.Group,
         projectData.Departments,
+        projectData.Building,
         projectData.Location,
         faker.PickRandom(organizers),
         faker.Random.ListItems((IList<ProjectOrganizer>)organizers, faker.Random.Number(0, 3)),
@@ -104,5 +105,5 @@ foreach (var projectData in projects) {
     }
 }
 
-record ProjectData(string Name, string Group, string Location, string Description, string[] Departments);
+record ProjectData(string Name, string Group, string Building, string Location, string Description, string[] Departments);
 record Organizer(string Id, string GivenName, string Surname, string UserPrincipalName);

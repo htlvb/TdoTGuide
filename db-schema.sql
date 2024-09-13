@@ -45,3 +45,17 @@ ALTER TABLE department ALTER COLUMN long_name SET NOT NULL;
 
 -- Allow empty project group
 ALTER TABLE project ALTER COLUMN "group" DROP NOT NULL;
+
+-- Add buildings
+DROP TABLE IF EXISTS building;
+CREATE TABLE building(
+    id SERIAL PRIMARY KEY NOT NULL,
+    name VARCHAR NOT NULL
+);
+INSERT INTO building (name) VALUES
+    ('Theorie'),
+    ('Labor'),
+    ('Werkstätte');
+ALTER TABLE project ADD COLUMN "building" INTEGER;
+UPDATE project SET "building"=1;
+ALTER TABLE project ALTER COLUMN "building" SET NOT NULL;

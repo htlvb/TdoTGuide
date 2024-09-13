@@ -93,6 +93,19 @@ else if (editingProject.Links.Save != null)
 
             <div class="input">
                 <label class="block">
+                    <span class="input-label">Gebäude</span>
+                    <InputSelect @bind-Value=editingProject.Data.Building class="input-select">
+                        <option value="">-- Bitte wählen --</option>
+                    @foreach (var building in editingProject.AllBuildings)
+                    {
+                        <option value=@building.Id>@building.Name</option>
+                    }
+                    </InputSelect>
+                </label>
+            </div>
+
+            <div class="input">
+                <label class="block">
                     <span class="input-label">Ort</span>
                     <InputText @bind-Value=editingProject.Data.Location class="input-text w-full md:w-96" />
                 </label>
@@ -302,6 +315,7 @@ else if (editingProject.Links.Save != null)
         EditingProjectData Data,
         IReadOnlyCollection<string> AllGroups,
         IReadOnlyCollection<DepartmentDto> AllDepartments,
+        IReadOnlyCollection<BuildingDto> AllBuildings,
         IReadOnlyCollection<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyCollection<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -313,6 +327,7 @@ else if (editingProject.Links.Save != null)
                 EditingProjectData.FromProjectData(project.Data),
                 project.AllGroups,
                 project.AllDepartments,
+                project.AllBuildings,
                 project.OrganizerCandidates,
                 project.CoOrganizerCandidates,
                 project.Links
@@ -328,6 +343,8 @@ else if (editingProject.Links.Save != null)
         public string Description { get; set; } = "";
         public required string Group { get; set; }
         public required List<string> Departments { get; init; }
+        [Required(ErrorMessage = "Gebäude muss ausgewählt werden.")]
+        public required string? Building { get; set; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
         public List<string> NewMediaNames { get; set; } = [];
         [Required(ErrorMessage = "Ort darf nicht leer sein.")]
@@ -346,6 +363,7 @@ else if (editingProject.Links.Save != null)
                 Description = projectData.Description,
                 Group = projectData.Group ?? "",
                 Departments = [.. projectData.Departments],
+                Building = projectData.Building,
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
@@ -363,6 +381,7 @@ else if (editingProject.Links.Save != null)
                 Departments,
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],
+                Building,
                 Location,
                 OrganizerId ?? throw new InvalidOperationException("Organizer is empty. Did you forget to validate?"),
                 CoOrganizerIds,

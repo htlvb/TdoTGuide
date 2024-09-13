@@ -34,6 +34,7 @@
         filteredProjects = showOnlyUserProjects ? filteredProjects.Where(v => v.IsUserProject) : filteredProjects;
         filteredProjects = filterGroup != null ? filteredProjects.Where(v => (v.Group ?? "") == filterGroup) : filteredProjects;
         filteredProjects = filterDepartment != null ? filteredProjects.Where(v => v.Departments.Contains(filterDepartment)) : filteredProjects;
+        filteredProjects = filterBuilding != null ? filteredProjects.Where(v => v.Building == filterBuilding) : filteredProjects;
         List<ProjectDto> filteredProjectList = filteredProjects.ToList();
 
         <div class="flex flex-col gap-2 border-gray-400 rounded shadow p-2">
@@ -63,6 +64,15 @@
                 }
             </div>
 
+            <div class="flex flex-col md:flex-row md:items-center gap-2">
+                @foreach (var building in projectList.AllBuildings)
+                {
+                    var isSelected = building.Id == filterBuilding;
+                    var classes = isSelected ? "btn btn-blue-selected" : "btn";
+                    <button type="button" @onclick=@(() => FilterProjectsByBuilding(building.Id)) class="@classes">@building.Name</button>
+                }
+            </div>
+
             <div class="flex flex-row flex-wrap gap-2 mt-2">
                 @{
                     var projectCountText = filteredProjectList.Count == 1 ? "1 Projekt" : $"{filteredProjectList.Count} Projekte";
@@ -73,7 +83,7 @@
 
         @foreach (var project in filteredProjectList)
         {
-            <ProjectListItem @key=project Project="@project" AllDepartments="@projectList.AllDepartments" OnUpdate="UpdateProject" OnDelete="@(() => RemoveProject(project))" />
+            <ProjectListItem @key=project Project="@project" AllDepartments="@projectList.AllDepartments" AllBuildings="@projectList.AllBuildings" OnUpdate="UpdateProject" OnDelete="@(() => RemoveProject(project))" />
         }
     }
 </div>
@@ -84,6 +94,7 @@
     private bool showOnlyUserProjects = false;
     private string? filterGroup = null;
     private string? filterDepartment = null;
+    private string? filterBuilding = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +122,11 @@
     private void FilterProjectsByDepartment(string departmentId)
     {
         filterDepartment = filterDepartment == departmentId ? null : departmentId;
+    }
+
+    private void FilterProjectsByBuilding(string building)
+    {
+        filterBuilding = filterBuilding == building ? null : building;
     }
 
     private void UpdateProject(ProjectDto oldProject, ProjectDto newProject)

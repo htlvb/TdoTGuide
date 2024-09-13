@@ -17,6 +17,7 @@ builder.Services.AddMinio(minioClient => minioClient
 builder.Services.AddSingleton(new PgsqlConnectionString(builder.Configuration.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql.")));
 builder.Services.AddSingleton<IProjectStore, PgsqlProjectStore>();
 builder.Services.AddSingleton<IDepartmentStore, PgsqlDepartmentStore>();
+builder.Services.AddSingleton<IBuildingStore, PgsqlBuildingStore>();
 builder.Services.AddSingleton<IProjectMediaStore, MinioProjectMediaStore>();
 
 builder.Services

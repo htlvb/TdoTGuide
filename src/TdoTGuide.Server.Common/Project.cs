@@ -6,6 +6,7 @@
         string Description,
         string? Group,
         IReadOnlyList<string> Departments,
+        string Building,
         string Location,
         ProjectOrganizer Organizer,
         IReadOnlyList<ProjectOrganizer> CoOrganizers,
