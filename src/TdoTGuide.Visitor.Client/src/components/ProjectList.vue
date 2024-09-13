@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const groups = computed(() => {
   if (props.projects === undefined) return [] as string[]
-  return _.uniq(props.projects.map(v => v.group).filter(v => v !== null))
+  return _.uniq(props.projects.map(v => v.group).filter((v): v is NonNullable<typeof v> => v !== null))
 })
 
 const selectedDepartments = ref<string[]>()
