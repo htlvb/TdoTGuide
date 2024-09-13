@@ -22,22 +22,8 @@ namespace TdoTGuide.Admin.Shared
         string? Building,
         string Location,
         string OrganizerId,
-        IReadOnlyList<string> CoOrganizerIds,
-        TimeSelectionDto TimeSelection
+        IReadOnlyList<string> CoOrganizerIds
     );
-
-    public record TimeSelectionDto(
-        TimeSelectionTypeDto Type,
-        int RegularIntervalMinutes,
-        List<DateTime> IndividualTimes
-    );
-
-    public enum TimeSelectionTypeDto
-    {
-        Continuous,
-        Regular,
-        Individual
-    }
 
     public record EditingProjectLinksDto(
         string? Save
@@ -63,7 +49,6 @@ namespace TdoTGuide.Admin.Shared
         string Location,
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,
-        TimeSelectionDto TimeSelection,
         UserRoleForProjectDto CurrentUserStatus,
         List<ProjectMediaDto> Media,
         ProjectLinksDto Links

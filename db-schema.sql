@@ -59,3 +59,6 @@ INSERT INTO building (name) VALUES
 ALTER TABLE project ADD COLUMN "building" INTEGER;
 UPDATE project SET "building"=1;
 ALTER TABLE project ALTER COLUMN "building" SET NOT NULL;
+
+-- Remove time selection
+ALTER TABLE project DROP COLUMN "time_selection";

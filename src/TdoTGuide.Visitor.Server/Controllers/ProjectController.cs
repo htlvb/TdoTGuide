@@ -49,7 +49,6 @@ public class ProjectController(
             project.Group,
             [.. project.Departments],
             project.Location,
-            project.TimeSelection.Accept(new TimeSelectionToDtoVisitor()),
             [.. media.Select(GetProjectMediaDtoFromDomain)]
         );
     }
@@ -68,23 +67,5 @@ public class ProjectController(
             _ => throw new Exception($"Unknown project media type: {media.Type}")
         };
         return new ProjectMediaDto(type, media.Url);
-    }
-
-    private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>
-    {
-        public TimeSelectionDto VisitContinuousTimeSelection(ContinuousTimeSelection v)
-        {
-            return new(TimeSelectionTypeDto.Continuous, default, []);
-        }
-
-        public TimeSelectionDto VisitRegularTimeSelection(RegularTimeSelection v)
-        {
-            return new TimeSelectionDto(TimeSelectionTypeDto.Regular, v.IntervalMinutes, []);
-        }
-
-        public TimeSelectionDto VisitIndividualTimeSelection(IndividualTimeSelection v)
-        {
-            return new(TimeSelectionTypeDto.Individual, default, [.. v.Times]);
-        }
     }
 }

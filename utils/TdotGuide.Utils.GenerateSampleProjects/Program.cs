@@ -48,20 +48,6 @@ foreach (var projectData in projects) {
     var existingMedia = await projectMediaStore.GetAllMediaNames(projectId).ToList();
     await projectMediaStore.RemoveMedia(projectId, existingMedia);
 
-    var timeSelection = faker.PickRandom<ITimeSelection>(
-        new ContinuousTimeSelection(),
-        new RegularTimeSelection(faker.Random.Number(1, 24) * 5),
-        new IndividualTimeSelection(
-            Enumerable.Range(0, faker.Random.Number(1, 10))
-                .Select(_ => new DateTime(DateTime.UtcNow.Date
-                    .AddDays(faker.Random.Number(0, 2))
-                    .AddHours(faker.Random.Number(8, 17))
-                    .AddMinutes(faker.Random.Number(0, 3) * 15)
-                    .Ticks, DateTimeKind.Unspecified)
-                )
-                .ToList()
-            )
-    );
     var project = new Project(
         projectId,
         projectData.Name,
@@ -71,8 +57,7 @@ foreach (var projectData in projects) {
         projectData.Building,
         projectData.Location,
         faker.PickRandom(organizers),
-        faker.Random.ListItems((IList<ProjectOrganizer>)organizers, faker.Random.Number(0, 3)),
-        timeSelection);
+        faker.Random.ListItems((IList<ProjectOrganizer>)organizers, faker.Random.Number(0, 3)));
     await projectStore.Create(project);
 
     using var httpClient = new HttpClient();

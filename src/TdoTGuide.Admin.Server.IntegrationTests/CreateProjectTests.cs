@@ -52,8 +52,6 @@ public class CreateProjectTests
             yield return new object[] { "Title is white-space", FakeData.EditingProjectDataDtoFaker.Generate() with { Title = " " } };
             yield return new object[] { "Unknown organizer", FakeData.EditingProjectDataDtoFaker.Generate() with { OrganizerId = "unknown-organizer" } };
             yield return new object[] { "Unknown co-organizer", FakeData.EditingProjectDataDtoFaker.Generate() with { CoOrganizerIds = new[] { "unknown-co-organizer" } } };
-            yield return new object[] { "Regular time interval is too small", FakeData.EditingProjectDataDtoFaker.Generate() with { TimeSelection = new TimeSelectionDto(TimeSelectionTypeDto.Regular, 0, []) } };
-            yield return new object[] { "Custom time list is empty", FakeData.EditingProjectDataDtoFaker.Generate() with { TimeSelection = new TimeSelectionDto(TimeSelectionTypeDto.Individual, 30, []) } };
         }
     }
 
@@ -106,8 +104,7 @@ public class CreateProjectTests
             project.Building,
             project.Location,
             project.Organizer.Id,
-            [.. project.CoOrganizers.Select(v => v.Id)],
-            new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+            [.. project.CoOrganizers.Select(v => v.Id)]
         );
 
         using var response = await client.PostAsJsonAsync($"/api/projects/{project.Id}", editProject, host.GetJsonSerializerOptions());
@@ -138,8 +135,7 @@ public class CreateProjectTests
             project.Building,
             project.Location,
             project.Organizer.Id,
-            [.. project.CoOrganizers.Select(v => v.Id)],
-            new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+            [.. project.CoOrganizers.Select(v => v.Id)]
         );
 
         using var response = await client.PostAsJsonAsync($"/api/projects/{project.Id}", projectUpdate, host.GetJsonSerializerOptions());

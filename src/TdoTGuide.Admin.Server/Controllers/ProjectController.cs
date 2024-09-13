@@ -91,8 +91,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         Building: null,
                         Location: "",
                         OrganizerId: UserId,
-                        CoOrganizerIds: Array.Empty<string>(),
-                        TimeSelection: new TimeSelectionDto(TimeSelectionTypeDto.Continuous, 30, [])
+                        CoOrganizerIds: Array.Empty<string>()
                     ),
                     projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
@@ -131,8 +130,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         project.Building,
                         project.Location,
                         project.Organizer.Id,
-                        project.CoOrganizers.Select(v => v.Id).ToArray(),
-                        project.TimeSelection.Accept(new TimeSelectionToDtoVisitor())
+                        project.CoOrganizers.Select(v => v.Id).ToArray()
                     ),
                     projectGroups,
                     [.. departments.Select(GetDepartmentDtoFromDomain)],
@@ -252,7 +250,6 @@ namespace TdoTGuide.Admin.Server.Controllers
                 project.Location,
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
-                project.TimeSelection.Accept(new TimeSelectionToDtoVisitor()),
                 getCurrentUserRole(project),
                 [.. media.Select(GetProjectMediaDtoFromDomain)],
                 new ProjectLinksDto(
@@ -281,24 +278,6 @@ namespace TdoTGuide.Admin.Server.Controllers
         private static BuildingDto GetBuildingDtoFromDomain(Building building)
         {
             return new(building.Id, building.Name);
-        }
-
-        private class TimeSelectionToDtoVisitor : ITimeSelectionVisitor<TimeSelectionDto>
-        {
-            public TimeSelectionDto VisitContinuousTimeSelection(ContinuousTimeSelection v)
-            {
-                return new(TimeSelectionTypeDto.Continuous, 30, []);
-            }
-
-            public TimeSelectionDto VisitRegularTimeSelection(RegularTimeSelection v)
-            {
-                return new TimeSelectionDto(TimeSelectionTypeDto.Regular, v.IntervalMinutes, []);
-            }
-
-            public TimeSelectionDto VisitIndividualTimeSelection(IndividualTimeSelection v)
-            {
-                return new(TimeSelectionTypeDto.Individual, 30, [.. v.Times]);
-            }
         }
     }
 }

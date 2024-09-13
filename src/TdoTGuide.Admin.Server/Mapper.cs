@@ -43,37 +43,6 @@ public static class Mapper
         var coOrganizers = coOrganizerIds
             .Select(v => organizerCandidates[v])
             .ToList();
-        ITimeSelection timeSelection;
-        if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Continuous)
-        {
-            timeSelection = new ContinuousTimeSelection();
-        }
-        else if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Regular)
-        {
-            if (projectData.TimeSelection.RegularIntervalMinutes <= 0 || projectData.TimeSelection.RegularIntervalMinutes % 5 != 0)
-            {
-                project = null;
-                errorMessage = "Regular time interval must be positive and divisible by 5.";
-                return false;
-            }
-            timeSelection = new RegularTimeSelection(projectData.TimeSelection.RegularIntervalMinutes);
-        }
-        else if (projectData.TimeSelection.Type == TimeSelectionTypeDto.Individual)
-        {
-            if (projectData.TimeSelection.IndividualTimes.Count == 0 || projectData.TimeSelection.IndividualTimes.Any(v => v < DateTime.Now))
-            {
-                project = null;
-                errorMessage = "At least one custom time must be provided and every time must be in the future.";
-                return false;
-            }
-            timeSelection = new IndividualTimeSelection(projectData.TimeSelection.IndividualTimes);
-        }
-        else
-        {
-            project = null;
-            errorMessage = "Invalid time selection.";
-            return false;
-        }
         project = new Project(
             projectId,
             projectData.Title,
@@ -83,8 +52,7 @@ public static class Mapper
             projectData.Building,
             projectData.Location,
             organizer,
-            coOrganizers,
-            timeSelection
+            coOrganizers
         );
         errorMessage = null;
         return true;

@@ -9,7 +9,6 @@
         string Building,
         string Location,
         ProjectOrganizer Organizer,
-        IReadOnlyList<ProjectOrganizer> CoOrganizers,
-        ITimeSelection TimeSelection
+        IReadOnlyList<ProjectOrganizer> CoOrganizers
     );
 }

@@ -29,25 +29,6 @@
                         <text>, @coOrganizer.DisplayName</text>
                     }
                 </span>
-                <div class="text-sm text-gray-600">
-                    @if (Project.TimeSelection.Type == TimeSelectionTypeDto.Continuous)
-                    {
-                        <text>laufend</text>
-                    }
-                    else if (Project.TimeSelection.Type == TimeSelectionTypeDto.Regular)
-                    {
-                        <text>regelmäßig alle @Project.TimeSelection.RegularIntervalMinutes Minuten</text>
-                    }
-                    else if (Project.TimeSelection.Type == TimeSelectionTypeDto.Individual)
-                    {
-                        <ul class="list-disc list-inside">
-                        @foreach (var time in Project.TimeSelection.IndividualTimes)
-                        {
-                            <li>@time.ToLongDateString() | @time.ToString("HH:mm")</li>
-                        }
-                        </ul>
-                    }
-                </div>
                 <span class="text-sm text-gray-600">@Project.Location (@(AllBuildings.FirstOrDefault(v => v.Id == Project.Building)?.Name ?? "unbekanntes Gebäude"))</span>
             </div>
             <div class="grow flex flex-col p-2">

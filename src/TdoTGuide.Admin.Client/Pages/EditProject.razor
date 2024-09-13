@@ -145,38 +145,6 @@ else if (editingProject.Links.Save != null)
                 <span class="text-xs inline-block pt-2">Tipp: Halte die <kbd>Strg</kbd>-Taste gedrückt, um mehrere Betreuer auszuwählen.</span>
             </div>
 
-            <div class="input">
-                <span class="input-label block">Zeit</span>
-                <InputRadioGroup @bind-Value=editingProject.Data.TimeSelection.Type>
-                    <label class="block">
-                        <InputRadio Value=TimeSelectionType.Continuous />
-                        <span class="text-sm">Laufend</span>
-                    </label>
-                    <div>
-                        <label>
-                            <InputRadio Value=TimeSelectionType.Regular />
-                            <span class="text-sm">Regelmäßig</span>
-                        </label>
-                        <span class="text-sm">alle <InputNumber @bind-Value=editingProject.Data.TimeSelection.RegularIntervalMinutes class="input-text !inline-block w-20" min="5" step="5" disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Regular) /> Minuten</span>
-                    </div>
-                    <div>
-                        <label>
-                            <InputRadio Value=TimeSelectionType.Individual />
-                            <span class="text-sm">Fixe Zeitpunkte</span>
-                        </label>
-                        <ul class="list-disc list-inside ml-6">
-                            @for (var i = 0; i < editingProject.Data.TimeSelection.IndividualTimes.Count; i++)
-                            {
-                                var index = i; @* Capture variable *@
-                                <li class="mt-2">
-                                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:get=editingProject.Data.TimeSelection.IndividualTimes[index] @bind-Value:set=@(value => SetIndividualTime(index, value)) disabled=@(editingProject.Data.TimeSelection.Type != TimeSelectionType.Individual) class="input-text !inline-block" />
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </InputRadioGroup>
-            </div>
-
             <ValidationSummary />
 
             <div class="input flex items-center gap-2">
@@ -261,19 +229,6 @@ else if (editingProject.Links.Save != null)
         StateHasChanged();
     }
 
-    private void SetIndividualTime(int index, DateTime? value)
-    {
-        if (editingProject == null)
-        {
-            return;
-        }
-        editingProject.Data.TimeSelection.IndividualTimes[index] = value;
-        if (index == editingProject.Data.TimeSelection.IndividualTimes.Count - 1 && value != null)
-        {
-            editingProject.Data.TimeSelection.IndividualTimes.Add(null);
-        }
-    }
-
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         if (editingProject == null)
@@ -352,8 +307,6 @@ else if (editingProject.Links.Save != null)
         [Required(ErrorMessage = "Organisator muss ausgewählt werden.")]
         public string? OrganizerId { get; set; }
         public string[] CoOrganizerIds { get; set; } = Array.Empty<string>();
-        [CustomValidation(typeof(TimeSelection), nameof(EditProject.TimeSelection.Validate))]
-        public TimeSelection TimeSelection { get; set; } = new();
 
         public static EditingProjectData FromProjectData(EditingProjectDataDto projectData)
         {
@@ -367,8 +320,7 @@ else if (editingProject.Links.Save != null)
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
-                CoOrganizerIds = projectData.CoOrganizerIds.ToArray(),
-                TimeSelection = EditProject.TimeSelection.FromDto(projectData.TimeSelection),
+                CoOrganizerIds = projectData.CoOrganizerIds.ToArray()
             };
         }
 
@@ -384,8 +336,7 @@ else if (editingProject.Links.Save != null)
                 Building,
                 Location,
                 OrganizerId ?? throw new InvalidOperationException("Organizer is empty. Did you forget to validate?"),
-                CoOrganizerIds,
-                TimeSelection.ToDto()
+                CoOrganizerIds
             );
         }
     }
@@ -400,71 +351,5 @@ else if (editingProject.Links.Save != null)
 
         public string Name { get; set; }
         public bool Remove { get; set; }
-    }
-
-    public class TimeSelection
-    {
-        public TimeSelectionType Type { get; set; } = TimeSelectionType.Continuous;
-        public int RegularIntervalMinutes { get; set; } = 30;
-        public List<DateTime?> IndividualTimes { get; set; } = [ null ];
-
-        public TimeSelectionDto ToDto()
-        {
-            return new(
-                Type switch {
-                    TimeSelectionType.Continuous => TimeSelectionTypeDto.Continuous,
-                    TimeSelectionType.Regular => TimeSelectionTypeDto.Regular,
-                    TimeSelectionType.Individual => TimeSelectionTypeDto.Individual,
-                    _ => TimeSelectionTypeDto.Continuous
-                },
-                RegularIntervalMinutes,
-                IndividualTimes.OfType<DateTime>().ToList()
-            );
-        }
-
-        public static TimeSelection FromDto(TimeSelectionDto timeSelection)
-        {
-            return new()
-            {
-                Type = timeSelection.Type switch {
-                    TimeSelectionTypeDto.Continuous => TimeSelectionType.Continuous,
-                    TimeSelectionTypeDto.Regular => TimeSelectionType.Regular,
-                    TimeSelectionTypeDto.Individual => TimeSelectionType.Individual,
-                    _ => TimeSelectionType.Continuous
-                },
-                RegularIntervalMinutes = timeSelection.RegularIntervalMinutes,
-                IndividualTimes = timeSelection.IndividualTimes.Select(v => (DateTime?)v).Append(null).ToList()
-            };
-        }
-
-        public static ValidationResult? Validate(TimeSelection value)
-        {
-            if (value.Type == TimeSelectionType.Regular)
-            {
-                if (value.RegularIntervalMinutes <= 0)
-                {
-                    return new ValidationResult("Zeitintervall muss positiv sein.");
-                }
-            }
-            else if (value.Type == TimeSelectionType.Individual)
-            {
-                if (!value.IndividualTimes.Where(v => v != null).Any())
-                {
-                    return new ValidationResult("Mindestens ein Zeitpunkt muss angegeben werden.");
-                }
-                if (value.IndividualTimes.Any(v => v < DateTime.Now))
-                {
-                    return new ValidationResult("Zeitpunkte dürfen nicht in der Vergangenheit sein.");
-                }
-            }
-            return null;
-        }
-    }
-
-    public enum TimeSelectionType
-    {
-        Continuous,
-        Regular,
-        Individual
     }
 }
