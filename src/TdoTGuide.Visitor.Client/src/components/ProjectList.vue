@@ -84,7 +84,7 @@ const filteredProjects = computed(() => {
           :class="{ 'button-htlvb-selected': selectedBuilding === building.id }">{{ building.name }}</button>
       </div>
       <p class="text-2xl mb-2">Für welche Projekte interessierst du dich?</p>
-      <div class="flex flex-row flex-wrap justify-center gap-2">
+      <div class="flex flex-row flex-wrap justify-center gap-2 mb-4">
         <button v-for="group in groups" :key="group"
           @click="() => selectGroup(group)"
           class="button text-white"
