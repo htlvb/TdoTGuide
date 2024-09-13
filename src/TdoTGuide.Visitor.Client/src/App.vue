@@ -28,7 +28,11 @@ loadProjects()
     <div class="max-w-screen-lg mx-auto">
       <LoadingBar v-if="isLoadingProjects" class="p-8" />
       <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
-      <ProjectList v-else-if="projectList !== undefined" :projects="projectList.projects" :departments="projectList.departments" class="p-4" />
+      <ProjectList v-else-if="projectList !== undefined"
+        :projects="projectList.projects"
+        :departments="projectList.departments"
+        :buildings="projectList.buildings"
+        class="p-4" />
     </div>
   </main>
 </template>

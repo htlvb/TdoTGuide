@@ -8,6 +8,7 @@ namespace TdoTGuide.Visitor.Server.Controllers;
 public class ProjectController(
     IProjectStore projectStore,
     IDepartmentStore departmentStore,
+    IBuildingStore buildingStore,
     IProjectMediaStore projectMediaStore,
     IHostEnvironment env) : ControllerBase
 {
@@ -20,6 +21,7 @@ public class ProjectController(
         }
         var projects = await projectStore.GetAll().ToList();
         var departments = await departmentStore.GetDepartments();
+        var buildings = await buildingStore.GetBuildings();
         var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);
         var projectDtos = new List<ProjectDto>();
         foreach (var project in projects)
@@ -34,7 +36,8 @@ public class ProjectController(
         }
         return new ProjectListDto(
             projectDtos,
-            [.. departments.Select(GetDepartmentDtoFromDomain)]
+            [.. departments.Select(GetDepartmentDtoFromDomain)],
+            [.. buildings.Select(GetBuildingDtoFromDomain)]
         );
     }
 
@@ -48,6 +51,7 @@ public class ProjectController(
             project.Description,
             project.Group,
             [.. project.Departments],
+            project.Building,
             project.Location,
             [.. media.Select(GetProjectMediaDtoFromDomain)]
         );
@@ -56,6 +60,11 @@ public class ProjectController(
     private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
     {
         return new(department.Id, department.Name, department.LongName, department.Color);
+    }
+
+    private static BuildingDto GetBuildingDtoFromDomain(Building building)
+    {
+        return new(building.Id, building.Name);
     }
 
     private ProjectMediaDto GetProjectMediaDtoFromDomain(ProjectMedia media)

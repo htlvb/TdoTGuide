@@ -2,7 +2,8 @@
 
 public record ProjectListDto(
     List<ProjectDto> Projects,
-    List<DepartmentDto> Departments
+    List<DepartmentDto> Departments,
+    List<BuildingDto> Buildings
 );
 
 public record ProjectDto(
@@ -11,10 +12,12 @@ public record ProjectDto(
     string Description,
     string? Group,
     List<string> Departments,
+    string Building,
     string Location,
     List<ProjectMediaDto> Media);
 
 public record DepartmentDto(string Id, string Name, string LongName, string Color);
+public record BuildingDto(string Id, string Name);
 
 public record ProjectMediaDto(ProjectMediaTypeDto Type, string Url);
 

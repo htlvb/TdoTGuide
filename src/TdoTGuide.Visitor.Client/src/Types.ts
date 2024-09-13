@@ -2,6 +2,7 @@ export module Dto {
   export type ProjectList = {
     projects: Project[]
     departments: Department[]
+    buildings: Building[]
   }
 
   export type Project = {
@@ -10,6 +11,7 @@ export module Dto {
     description: string
     group: string | null
     departments: string[]
+    building: string
     location: string
     media: ProjectMedia[]
   }
@@ -19,6 +21,11 @@ export module Dto {
     name: string
     longName: string
     color: string
+  }
+
+  export type Building = {
+    id: string
+    name: string
   }
 
   export type ProjectMedia = {

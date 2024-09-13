@@ -6,8 +6,9 @@ import _, { type Dictionary } from 'lodash'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  project: Dto.Project,
+  project: Dto.Project
   departments: Dto.Department[]
+  buildings: Dto.Building[]
 }>()
 
 const md = new MarkdownIt({ linkify: true })
@@ -33,7 +34,7 @@ const projectDepartments = props.project.departments
       <div v-if="projectDepartments.length > 0" class="flex flex-wrap gap-2">
         <ExpandableName v-for="department in projectDepartments" :key="department.id" :short-name="department.name" :long-name="department.longName" class="button !text-white" :style="{ 'background-color': department.color}" />
       </div>
-      <p><span class="font-bold">Wo:</span> {{ project.location }}</p>
+      <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>
     </div>
     <div class="flex flex-row flex-wrap items-center gap-2">
       <template v-for="media in project.media" :key="media.url">
