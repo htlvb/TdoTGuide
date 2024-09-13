@@ -13,7 +13,7 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-var projectStore = new PgsqlProjectStore(config.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql."));
+var projectStore = new PgsqlProjectStore(new PgsqlConnectionString(config.GetConnectionString("Pgsql") ?? throw new Exception("Can't find ConnectionStrings\\Pgsql.")));
 var minioClient = new MinioClient()
     .WithEndpoint(config.GetSection("Minio")["Endpoint"])
     .WithSSL(config.GetSection("Minio").GetValue("UseSSL", true))

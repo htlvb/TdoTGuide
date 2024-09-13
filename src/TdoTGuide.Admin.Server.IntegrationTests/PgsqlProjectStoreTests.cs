@@ -23,7 +23,7 @@ public class PgsqlProjectStoreTests : IAsyncLifetime
     [Fact]
     public async Task CanStoreProject()
     {
-        var projectStore = new PgsqlProjectStore(pgsqlContainer.GetConnectionString());
+        var projectStore = new PgsqlProjectStore(new PgsqlConnectionString(pgsqlContainer.GetConnectionString()));
         var project = FakeData.ProjectFaker.Generate();
         await projectStore.Create(project);
         var actual = await projectStore.GetAll().ToList();

@@ -11,9 +11,9 @@ namespace TdoTGuide.Server.Common
     {
         private readonly NpgsqlDataSource dataSource;
 
-        public PgsqlProjectStore(string dbConnectionString)
+        public PgsqlProjectStore(PgsqlConnectionString dbConnectionString)
         {
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(dbConnectionString);
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(dbConnectionString.Value);
             dataSourceBuilder.EnableDynamicJson();
             dataSource = dataSourceBuilder.Build();
         }

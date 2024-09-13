@@ -8,9 +8,9 @@ public class PgsqlDepartmentStore : IDepartmentStore, IDisposable
 {
     private readonly NpgsqlDataSource dataSource;
 
-    public PgsqlDepartmentStore(string dbConnectionString)
+    public PgsqlDepartmentStore(PgsqlConnectionString dbConnectionString)
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(dbConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(dbConnectionString.Value);
         dataSourceBuilder.EnableDynamicJson();
         dataSource = dataSourceBuilder.Build();
     }
