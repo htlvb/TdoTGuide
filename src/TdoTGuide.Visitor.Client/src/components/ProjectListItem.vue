@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { Dto } from '@/Types'
 import ExpandableName from './ExpandableName.vue'
 import MarkdownIt from 'markdown-it'
-import _, { type Dictionary } from 'lodash'
-import { computed } from 'vue'
 
 const props = defineProps<{
   project: Dto.Project
@@ -24,6 +23,8 @@ const projectDescription = md.render(props.project.description)
 const projectDepartments = props.project.departments
   .map(departmentId => props.departments.find(v => v.id === departmentId))
   .filter((v): v is NonNullable<typeof v> => v !== undefined)
+
+const showMedia = ref(false)
 </script>
 
 <template>
@@ -36,12 +37,17 @@ const projectDepartments = props.project.departments
       </div>
       <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>
     </div>
-    <div class="flex flex-row flex-wrap items-center gap-2">
-      <template v-for="media in project.media" :key="media.url">
-        <img v-if="media.type === 'Image'" :src="media.url" width="200" />
-        <video v-else-if="media.type === 'Video'" :src="media.url" width="300" controls></video>
-      </template>
+    <div v-if="showMedia">
+      <div class="flex flex-row flex-wrap items-center gap-2">
+        <template v-for="media in project.media" :key="media.url">
+          <img v-if="media.type === 'Image'" :src="media.url" width="200" />
+          <video v-else-if="media.type === 'Video'" :src="media.url" width="300" controls></video>
+        </template>
+      </div>
     </div>
+    <a v-if="project.media.length > 0" @click="showMedia = !showMedia" class="border dark:border-none dark:bg-gray-500/25 cursor-pointer flex justify-center p-1">
+      <font-awesome-icon :icon="['fas', (showMedia ? 'angles-up' : 'angles-down')]" />
+    </a>
   </div>
 </template>
 
