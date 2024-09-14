@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    .small-caps {
+        font-variant: small-caps;
+    }
+}
+
+@font-face {
+    font-family: "Titillium Web";
+    src: url("@/assets/TitilliumWeb-Regular.ttf");
+}
+
+body {
+    font-family: "Titillium Web", "serif";
+}
 html, body, #app {
     height: 100%;
 }

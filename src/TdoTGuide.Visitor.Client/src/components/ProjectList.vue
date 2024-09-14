@@ -8,14 +8,17 @@ const props = defineProps<{
   projects: Dto.Project[]
   departments: Dto.Department[]
   buildings: Dto.Building[]
+  initialSelectedDepartments?: Dto.Department['id'][]
+  initialSelectedGroup?: string
+  initialSelectedBuilding?: Dto.Building['id']
 }>()
 
 const groups = computed(() => {
-  if (props.projects === undefined) return [] as string[]
+  if (props.projects === undefined) return []
   return _.uniq(props.projects.map(v => v.group).filter((v): v is NonNullable<typeof v> => v !== null))
 })
 
-const selectedDepartments = ref<string[]>()
+const selectedDepartments = ref(props.initialSelectedDepartments)
 const selectDepartment = (departmentId: string) => {
   if (selectedDepartments.value === undefined) {
     selectedDepartments.value = [ departmentId ]
@@ -34,12 +37,12 @@ const selectDepartment = (departmentId: string) => {
   }
 }
 
-const selectedBuilding = ref<string>()
+const selectedBuilding = ref(props.initialSelectedBuilding)
 const selectBuilding = (buildingId: string) => {
   selectedBuilding.value = selectedBuilding.value === buildingId ? undefined : buildingId
 }
 
-const selectedGroup = ref<string>()
+const selectedGroup = ref(props.initialSelectedGroup)
 const selectGroup = (groupId: string) => {
   selectedGroup.value = selectedGroup.value === groupId ? undefined : groupId
 }

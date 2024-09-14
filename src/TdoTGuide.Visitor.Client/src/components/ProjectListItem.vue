@@ -45,7 +45,7 @@ const showMedia = ref(false)
         </template>
       </div>
     </div>
-    <a v-if="project.media.length > 0" @click="showMedia = !showMedia" class="border dark:border-none dark:bg-gray-500/25 cursor-pointer flex justify-center p-1">
+    <a v-if="project.media.length > 0" @click="showMedia = !showMedia" class="bg-gray-500/25 cursor-pointer flex justify-center p-1">
       <font-awesome-icon :icon="['fas', (showMedia ? 'angles-up' : 'angles-down')]" />
     </a>
   </div>
@@ -65,6 +65,6 @@ const showMedia = ref(false)
     @apply list-inside list-disc;
 }
 .description :deep(a) {
-    @apply text-blue-700 dark:text-blue-300 border-blue-700 dark:border-blue-300 cursor-pointer hover:border-b;
+    @apply text-blue-300 border-blue-300 cursor-pointer hover:border-b;
 }
 </style>

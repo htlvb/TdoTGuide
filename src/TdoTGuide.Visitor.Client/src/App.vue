@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import uiFetch from './UIFetch'
 import ErrorWithRetry from './components/ErrorWithRetry.vue'
 import LoadingBar from './components/LoadingBar.vue'
+import ProjectOverview from './components/ProjectOverview.vue'
 import ProjectList from './components/ProjectList.vue'
 import type { Dto } from './Types'
+import _ from 'lodash'
 
 const projectList = ref<Dto.ProjectList>()
 const isLoadingProjects = ref(false)
@@ -16,22 +18,44 @@ const loadProjects = async () => {
   }
 }
 loadProjects()
+
+const groups = computed(() => {
+  if (projectList.value === undefined) return []
+  return _.uniq(projectList.value.projects.map(v => v.group).filter((v): v is NonNullable<typeof v> => v !== null))
+})
+
+type ProjectFilter = {
+  type: 'department',
+  department: string
+} | {
+  type: 'group',
+  group: string
+} | {
+  type: 'building',
+  building: string
+}
+
+const initialFilter = ref<ProjectFilter>()
 </script>
 
 <template>
-  <header class="p-6 md:p-8 bg-htlvb flex items-center gap-4 text-white">
-    <img alt="HTLVB Logo" class="logo w-[90px] md:w-[120px]" src="./assets/logo.svg" />
-    <h1 class="text-2xl md:text-5xl">TdoT@HTLVB</h1>
-  </header>
-
-  <main class="dark:bg-stone-800 dark:text-white">
+  <main class="bg-stone-800 text-white bg-[url('@/assets/bg.jpg')] bg-cover">
     <div class="max-w-screen-lg mx-auto">
-      <LoadingBar v-if="isLoadingProjects" class="p-8" />
-      <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
+      <ErrorWithRetry v-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
+      <ProjectOverview v-if="initialFilter === undefined"
+        :departments="projectList?.departments ?? []"
+        :groups="groups"
+        :buildings="projectList?.buildings ?? []"
+        @select-department="v => initialFilter = { type: 'department', department: v }"
+        @select-group="v => initialFilter = { type: 'group', group: v }"
+        @select-building="v => initialFilter = { type: 'building', building: v }" />
       <ProjectList v-else-if="projectList !== undefined"
         :projects="projectList.projects"
         :departments="projectList.departments"
         :buildings="projectList.buildings"
+        :initialSelectedDepartments="initialFilter.type === 'department' ? [initialFilter.department] : undefined"
+        :initialSelectedGroup="initialFilter.type === 'group' ? initialFilter.group : undefined"
+        :initialSelectedBuilding="initialFilter.type === 'building' ? initialFilter.building : undefined"
         class="p-4" />
     </div>
   </main>
