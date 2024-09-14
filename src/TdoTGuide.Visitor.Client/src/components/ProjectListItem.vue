@@ -38,7 +38,7 @@ const showMedia = ref(false)
       <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>
     </div>
     <div v-if="showMedia">
-      <div class="flex flex-row flex-wrap items-center gap-2">
+      <div class="flex flex-col md:flex-row md:flex-wrap items-center gap-2">
         <template v-for="media in project.media" :key="media.url">
           <img v-if="media.type === 'Image'" :src="media.url" width="200" />
           <video v-else-if="media.type === 'Video'" :src="media.url" width="300" controls></video>

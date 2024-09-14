@@ -35,28 +35,22 @@ const filters = computed(() => {
 
 <template>
   <div class="flex flex-col gap-4 items-center">
-    <header class="text-center small-caps mt-16">
-      <p class="text-5xl leading-normal">Tage der offenen Tür</p>
-      <p class="text-3xl leading-normal">Fr. 22.11.2024 13:00 - 17:00</p>
-      <p class="text-3xl leading-normal">Sa. 23.11.2024 09:00 - 13:00</p>
+    <header class="text-center small-caps mt-8 md:mt-16">
+      <p class="text-3xl md:text-5xl leading-normal">Tage der offenen Tür</p>
+      <p class="text-xl md:text-3xl leading-normal">Fr. 22.11.2024 13:00 - 17:00</p>
+      <p class="text-xl md:text-3xl leading-normal">Sa. 23.11.2024 09:00 - 13:00</p>
     </header>
-    <div class="border border-white border-2 p-4 text-3xl leading-normal text-center small-caps">
+    <div class="border border-white border-2 p-4 text-xl md:text-3xl leading-normal text-center small-caps">
       <p>Gestalte deinen eigenen Rundgang</p>
       <p>Suche dir aus, was dir gefällt</p>
     </div>
-    <div class="my-8 flex flex-col items-center">
-      <a v-for="filter in filters" :key="filter.id" class="filter" @click="filter.onClick">
+    <div class="my-4 md:my-8 flex flex-col items-center">
+      <a v-for="filter in filters" :key="filter.id" class="text-lg md:text-2xl cursor-pointer text-center my-2 md:my-4 small-caps" @click="filter.onClick">
         {{ filter.title }}
       </a>
     </div>
-    <div>
+    <div class="mb-4">
       <img src="@/assets/logo.svg" width="250">
     </div>
   </div>
 </template>
-
-<style lang="css" scoped>
-.filter {
-  @apply text-2xl cursor-pointer text-center my-4 [font-variant:small-caps];
-}
-</style>
