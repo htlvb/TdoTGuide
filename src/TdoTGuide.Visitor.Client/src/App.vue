@@ -77,7 +77,7 @@ const filteredProjects = computed(() => {
 </script>
 
 <template>
-  <main class="bg-stone-800 text-white bg-[url('@/assets/bg.jpg')] bg-cover bg-center h-full overflow-y-scroll">
+  <main class="bg-stone-800 text-white bg-[url('@/assets/bg.jpg')] bg-cover bg-top h-full overflow-y-scroll">
     <div class="max-w-screen-lg mx-auto">
       <div class="flex flex-col items-center gap-6">
         <header class="flex flex-col items-center gap-6 print:[zoom:1.5]">
