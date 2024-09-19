@@ -4,7 +4,6 @@ import uiFetch from './UIFetch'
 import ErrorWithRetry from './components/ErrorWithRetry.vue'
 import ProjectList from './components/ProjectList.vue'
 import type { Dto } from './Types'
-import _ from 'lodash'
 
 const projectList = ref<Dto.ProjectList>()
 const isLoadingProjects = ref(false)
