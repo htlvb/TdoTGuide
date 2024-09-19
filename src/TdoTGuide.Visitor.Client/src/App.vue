@@ -94,13 +94,13 @@ const filteredProjects = computed(() => {
             <img src="@/assets/qr-code.svg" width="150">
           </div>
           <div>
-            <img src="@/assets/logo.svg" width="250">
+            <img src="@/assets/logo.svg" width="250" height="106">
           </div>
         </header>
         <LoadingBar v-if="isLoadingProjects" />
         <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
-        <template v-else-if="projectList !== undefined">
-          <section class="flex flex-col items-center gap-6 print:hidden">
+        <section v-else-if="projectList !== undefined" class="flex flex-col gap-6 print:hidden">
+          <section class="flex flex-col items-center gap-2 animation-fade-in">
             <p class="text-2xl text-center">Für welche Abteilungen interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="department in projectList.departments" :key="department.id"
@@ -108,6 +108,8 @@ const filteredProjects = computed(() => {
                 class="button text-white"
                 :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
             </div>
+          </section>
+          <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:1s]">
             <p class="text-2xl text-center">Für welches Gebäude interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="building in projectList.buildings" :key="building.id"
@@ -115,6 +117,8 @@ const filteredProjects = computed(() => {
                 class="button text-white"
                 :class="{ 'button-htlvb-selected': selectedBuilding === building.id }">{{ building.name }}</button>
             </div>
+          </section>
+          <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:2s]">
             <p class="text-2xl text-center">Für welche Projekte interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="group in groups" :key="group"
@@ -123,7 +127,7 @@ const filteredProjects = computed(() => {
                 :class="{ 'button-htlvb-selected': selectedGroup === group }">{{ group }}</button>
             </div>
           </section>
-          <section class="self-stretch flex flex-col gap-4 mt-4 print:hidden">
+          <section class="self-stretch flex flex-col gap-4 mt-4 animation-fade-in ![animation-delay:3s] print:hidden">
             <span v-if="filteredProjects.length === 0" class="self-center">
               😥 Keine Angebote gefunden
             </span>
@@ -132,7 +136,7 @@ const filteredProjects = computed(() => {
               :departments="projectList.departments"
               :buildings="projectList.buildings" />
           </section>
-        </template>
+        </section>
       </div>
     </div>
   </main>
