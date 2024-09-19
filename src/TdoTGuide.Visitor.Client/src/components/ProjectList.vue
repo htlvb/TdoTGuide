@@ -8,9 +8,6 @@ const props = defineProps<{
   projects: Dto.Project[]
   departments: Dto.Department[]
   buildings: Dto.Building[]
-  initialSelectedDepartments?: Dto.Department['id'][]
-  initialSelectedGroup?: string
-  initialSelectedBuilding?: Dto.Building['id']
 }>()
 
 const groups = computed(() => {
@@ -18,7 +15,7 @@ const groups = computed(() => {
   return _.uniq(props.projects.map(v => v.group).filter((v): v is NonNullable<typeof v> => v !== null))
 })
 
-const selectedDepartments = ref(props.initialSelectedDepartments)
+const selectedDepartments = ref<string[]>()
 const selectDepartment = (departmentId: string) => {
   if (selectedDepartments.value === undefined) {
     selectedDepartments.value = [ departmentId ]
@@ -37,12 +34,12 @@ const selectDepartment = (departmentId: string) => {
   }
 }
 
-const selectedBuilding = ref(props.initialSelectedBuilding)
+const selectedBuilding = ref<string>()
 const selectBuilding = (buildingId: string) => {
   selectedBuilding.value = selectedBuilding.value === buildingId ? undefined : buildingId
 }
 
-const selectedGroup = ref(props.initialSelectedGroup)
+const selectedGroup = ref<string>()
 const selectGroup = (groupId: string) => {
   selectedGroup.value = selectedGroup.value === groupId ? undefined : groupId
 }
@@ -72,6 +69,18 @@ const filteredProjects = computed(() => {
 <template>
   <div>
     <div class="flex flex-col items-center gap-2">
+      <header class="text-center small-caps mt-8 md:mt-16 mb-4">
+        <p class="text-3xl md:text-5xl leading-normal">Tage der offenen Tür</p>
+        <p class="text-xl md:text-3xl leading-normal">Fr. 22.11.2024 13:00 - 17:00</p>
+        <p class="text-xl md:text-3xl leading-normal">Sa. 23.11.2024 09:00 - 13:00</p>
+      </header>
+      <div class="border border-white border-2 p-4 mb-4 text-xl md:text-3xl leading-normal text-center small-caps">
+        <p>Gestalte deinen eigenen Rundgang</p>
+        <p>&ndash; Suche dir aus, was dir gefällt &ndash;</p>
+      </div>
+      <div class="mb-4">
+        <img src="@/assets/logo.svg" width="250">
+      </div>
       <p class="text-2xl mb-2 text-center">Für welche Abteilungen interessierst du dich?</p>
       <div class="flex flex-row flex-wrap justify-center gap-2 mb-4">
         <button v-for="department in departments" :key="department.id"
