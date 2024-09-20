@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        htlvb: "#134883"
+        htlvb: "#0A1B35"
       }
     },
   },
