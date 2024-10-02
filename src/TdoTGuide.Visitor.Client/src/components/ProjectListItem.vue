@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { Dto } from '@/Types'
 import ExpandableName from './ExpandableName.vue'
+import ImageMedia from './ImageMedia.vue'
 import MarkdownIt from 'markdown-it'
 
 const props = defineProps<{
@@ -40,7 +41,7 @@ const showMedia = ref(false)
     <div v-if="showMedia">
       <div class="flex flex-col md:flex-row md:flex-wrap items-center gap-2">
         <template v-for="media in project.media" :key="media.url">
-          <img v-if="media.type === 'Image'" :src="media.url" width="200" />
+          <ImageMedia v-if="media.type === 'Image'" :url="media.url" />
           <video v-else-if="media.type === 'Video'" :src="media.url" width="300" controls></video>
         </template>
       </div>
