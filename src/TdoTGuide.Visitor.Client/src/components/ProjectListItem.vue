@@ -46,8 +46,9 @@ const showMedia = ref(false)
         </template>
       </div>
     </div>
-    <a v-if="project.media.length > 0" @click="showMedia = !showMedia" class="bg-gray-500/25 cursor-pointer flex justify-center p-1">
+    <a v-if="project.media.length > 0" @click="showMedia = !showMedia" class="bg-gray-500/25 cursor-pointer flex justify-center items-center p-1 gap-2">
       <font-awesome-icon :icon="['fas', (showMedia ? 'angles-up' : 'angles-down')]" />
+       {{ showMedia ? 'Fotos/Videos verstecken' : 'Fotos/Videos anzeigen' }}
     </a>
   </div>
 </template>
