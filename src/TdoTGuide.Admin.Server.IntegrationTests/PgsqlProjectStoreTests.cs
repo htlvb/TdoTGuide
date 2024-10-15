@@ -7,6 +7,7 @@ namespace TdoTGuide.Admin.Server.IntegrationTests;
 public class PgsqlProjectStoreTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer pgsqlContainer = new PostgreSqlBuilder()
+        .WithImage("postgres")
         .WithBindMount(Path.GetFullPath("db-schema.sql"), "/docker-entrypoint-initdb.d/01-schema.sql")
         .Build();
 
