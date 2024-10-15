@@ -19,7 +19,7 @@ public static class FakeData
                 Id: v.Random.Uuid().ToString(),
                 Title: v.Random.Words(),
                 Description: v.Lorem.Sentences(),
-                Group: v.Random.Word(),
+                Groups: v.Random.WordsArray(0, 2),
                 Departments: v.Random.ArrayElements([.. Enumerable.Range(1, 10).Select(v => $"{v}")]),
                 Building: v.Random.Int(1, 3).ToString(),
                 Location: v.Address.BuildingNumber(),
@@ -40,7 +40,7 @@ public static class FakeData
             return new EditingProjectDataDto(
                 Title: v.Random.Words(),
                 Description: v.Lorem.Sentences(),
-                Group: v.Random.Word(),
+                Groups: v.Random.WordsArray(0, 2),
                 Departments: v.Random.ArrayElements([.. Enumerable.Range(0, 10).Select(v => $"{v}")]),
                 MediaFileNames: v.Random.WordsArray(0, 5),
                 MediaFileNamesToRemove: v.Random.WordsArray(0, 5),

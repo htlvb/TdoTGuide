@@ -20,7 +20,7 @@ loadProjects()
 
 const groups = computed(() => {
   if (projectList.value === undefined) return []
-  return _.uniq(projectList.value.projects.map(v => v.group).filter((v): v is NonNullable<typeof v> => v !== null))
+  return _.uniq(projectList.value.projects.flatMap(v => v.groups))
 })
 
 const selectedDepartments = ref<string[]>()
@@ -65,7 +65,8 @@ const filteredProjects = computed(() => {
   }
 
   if (selectedGroup.value !== undefined) {
-    result = result.filter(project => project.group === selectedGroup.value)
+    const selectedGroupName = selectedGroup.value
+    result = result.filter(project => project.groups.includes(selectedGroupName))
   }
 
   if (selectedBuilding.value !== undefined) {

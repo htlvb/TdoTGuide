@@ -24,7 +24,7 @@ public class InMemoryProjectStore : IProjectStore
     public async IAsyncEnumerable<string> GetProjectGroups()
     {
         await Task.Yield();
-        foreach (var group in projects.Select(v => v.Group).OfType<string>().Distinct())
+        foreach (var group in projects.SelectMany(v => v.Groups).Distinct())
         {
             yield return group;
         }

@@ -1,7 +1,7 @@
 [
     {
         "name": "3D-Druck",
-        "group": "Technik",
+        "groups": ["Technik", "Design"],
         "building": "1",
         "location": "R001",
         "description": "Entdecken Sie die **Welt des 3D-Drucks** und lernen Sie, wie aus digitalen Modellen reale Objekte werden.",
@@ -9,7 +9,7 @@
     },
     {
         "name": "Robotik und Automation",
-        "group": "Technik",
+        "groups": ["Technik"],
         "building": "2",
         "location": "L105",
         "description": "Erleben Sie in unserer **Robotik-Demonstration** die Zukunft der Automatisierung.",
@@ -17,7 +17,7 @@
     },
     {
         "name": "Energieeffizienz im Gebäude",
-        "group": "Gebaeudetechnik",
+        "groups": ["Gebaeudetechnik"],
         "building": "3",
         "location": "W032",
         "description": "Erfahren Sie mehr über **moderne Lösungen** zur Steigerung der Energieeffizienz in Gebäuden.",
@@ -25,7 +25,7 @@
     },
     {
         "name": "CNC-Fräsen",
-        "group": "Technik",
+        "groups": ["Technik"],
         "building": "1",
         "location": "R002",
         "description": "Eine **Live-Demonstration** unserer CNC-Fräsmaschinen - Präzision trifft auf Technologie.",
@@ -33,7 +33,7 @@
     },
     {
         "name": "Industrielle Messtechnik",
-        "group": "Technik",
+        "groups": ["Technik"],
         "building": "2",
         "location": "L106",
         "description": "Erfahren Sie, wie **präzise Messverfahren** in der Industrie angewendet werden.",
@@ -41,7 +41,7 @@
     },
     {
         "name": "Nachhaltige Produktionsprozesse",
-        "group": "Industrial Engineering",
+        "groups": ["Industrial Engineering"],
         "building": "3",
         "location": "W033",
         "description": "Lernen Sie, wie **Nachhaltigkeit** in der industriellen Produktion umgesetzt wird.",
@@ -49,7 +49,7 @@
     },
     {
         "name": "Gebäudetechnik 4.0",
-        "group": "Gebaeudetechnik",
+        "groups": ["Gebaeudetechnik"],
         "building": "3",
         "location": "W034",
         "description": "Entdecken Sie **intelligente Systeme** für das Gebäudemanagement der Zukunft.",
@@ -57,7 +57,7 @@
     },
     {
         "name": "Industrielle Informatik",
-        "group": "Informatik",
+        "groups": ["Informatik"],
         "building": "1",
         "location": "R003",
         "description": "Erfahren Sie, wie **Softwarelösungen** die Industrie revolutionieren.",
@@ -65,7 +65,7 @@
     },
     {
         "name": "Automatisierungstechnik",
-        "group": "Technik",
+        "groups": ["Technik"],
         "building": "2",
         "location": "L107",
         "description": "Einblick in die **Automatisierungstechnik** - von der Theorie zur Praxis.",
@@ -73,7 +73,7 @@
     },
     {
         "name": "Anlagentechnik im Maschinenbau",
-        "group": "Technik",
+        "groups": ["Technik"],
         "building": "1",
         "location": "R004",
         "description": "Lernen Sie die **Anlagentechnik** im Maschinenbau und ihre Herausforderungen kennen.",

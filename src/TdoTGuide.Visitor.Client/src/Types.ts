@@ -9,7 +9,7 @@ export module Dto {
     id: string
     title: string
     description: string
-    group: string | null
+    groups: string[]
     departments: string[]
     building: string
     location: string

@@ -10,7 +10,7 @@ public record ProjectDto(
     string Id,
     string Title,
     string Description,
-    string? Group,
+    List<string> Groups,
     List<string> Departments,
     string Building,
     string Location,

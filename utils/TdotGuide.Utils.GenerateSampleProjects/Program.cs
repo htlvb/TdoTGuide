@@ -52,7 +52,7 @@ foreach (var projectData in projects) {
         projectId,
         projectData.Name,
         projectData.Description,
-        projectData.Group,
+        projectData.Groups,
         projectData.Departments,
         projectData.Building,
         projectData.Location,
@@ -90,5 +90,5 @@ foreach (var projectData in projects) {
     }
 }
 
-record ProjectData(string Name, string Group, string Building, string Location, string Description, string[] Departments);
+record ProjectData(string Name, string[] Groups, string Building, string Location, string Description, string[] Departments);
 record Organizer(string Id, string GivenName, string Surname, string UserPrincipalName);

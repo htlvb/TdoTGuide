@@ -49,7 +49,7 @@ public class ProjectController(
             project.Id,
             project.Title,
             project.Description,
-            project.Group,
+            [.. project.Groups],
             [.. project.Departments],
             project.Building,
             project.Location,
