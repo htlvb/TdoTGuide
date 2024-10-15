@@ -4,7 +4,7 @@
         string Id,
         string Title,
         string Description,
-        string? Group,
+        IReadOnlyList<string> Groups,
         IReadOnlyList<string> Departments,
         string Building,
         string Location,

@@ -84,7 +84,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                     new EditingProjectDataDto(
                         Title: "",
                         Description: "",
-                        Group: "",
+                        Groups: [],
                         Departments: [],
                         MediaFileNames: [],
                         MediaFileNamesToRemove: [],
@@ -123,7 +123,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                     new EditingProjectDataDto(
                         project.Title,
                         project.Description,
-                        project.Group,
+                        project.Groups,
                         project.Departments,
                         projectMediaNames,
                         [],
@@ -244,7 +244,7 @@ namespace TdoTGuide.Admin.Server.Controllers
             return new ProjectDto(
                 project.Title,
                 project.Description,
-                project.Group,
+                project.Groups,
                 project.Departments,
                 project.Building,
                 project.Location,

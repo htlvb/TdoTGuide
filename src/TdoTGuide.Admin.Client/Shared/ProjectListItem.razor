@@ -9,7 +9,7 @@
         <div class="flex flex-col divide-y md:divide-y-0 divide-x-0 md:divide-x md:flex-row w-full">
             <div class="flex flex-col basis-1/5 shrink-0 p-2 gap-2">
                 <span class="text-xl text-black">@Project.Title</span>
-                <span>@(Project.Group ?? "<Keine Gruppe>")</span>
+                <span>@(Project.Groups.Count == 0 ? "<Keine Gruppe>" : string.Join(", ", Project.Groups))</span>
                 <span class="flex gap-1">
                     @{
                         var projectDepartments = Project.Departments

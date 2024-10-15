@@ -54,8 +54,8 @@ else if (editingProject.Links.Save != null)
             <div class="input">
                 <label class="block">
                     <span class="input-label">Gruppe</span>
-                    <InputText @bind-Value=editingProject.Data.Group list="project-groups" class="input-text w-full md:w-96" />
-                    <span class="text-xs">Aus bestehenden Gruppen wählen, neue definieren (z.B. Werkstätten, Mädchen in der Technik), oder frei lassen</span>
+                    <InputText @bind-Value=editingProject.Data.Groups list="project-groups" class="input-text w-full md:w-96" />
+                    <span class="text-xs">Aus bestehenden Gruppen wählen, neue definieren (z.B. Werkstätten, Activities), oder frei lassen. Mehrere Gruppen mit Beistrich trennen.</span>
                     <datalist id="project-groups">
                         @foreach (var groupName in editingProject.AllGroups)
                         {
@@ -296,7 +296,7 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
-        public required string Group { get; set; }
+        public required string Groups { get; set; }
         public required List<string> Departments { get; init; }
         [Required(ErrorMessage = "Gebäude muss ausgewählt werden.")]
         public required string? Building { get; set; }
@@ -314,7 +314,7 @@ else if (editingProject.Links.Save != null)
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
-                Group = projectData.Group ?? "",
+                Groups = string.Join(", ", projectData.Groups),
                 Departments = [.. projectData.Departments],
                 Building = projectData.Building,
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
@@ -329,7 +329,7 @@ else if (editingProject.Links.Save != null)
             return new EditingProjectDataDto(
                 Title,
                 Description,
-                Group,
+                Groups.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                 Departments,
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],

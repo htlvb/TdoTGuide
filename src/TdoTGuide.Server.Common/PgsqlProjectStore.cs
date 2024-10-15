@@ -51,7 +51,7 @@ namespace TdoTGuide.Server.Common
         public async IAsyncEnumerable<string> GetProjectGroups()
         {
             await using var dbConnection = await dataSource.OpenConnectionAsync();
-            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT \"group\" FROM project WHERE \"group\" IS NOT NULL ORDER BY \"group\"");
+            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT jsonb_array_elements_text(groups) as \"group\" FROM project ORDER BY \"group\"");
             foreach (var group in groups)
             {
                 yield return group;
@@ -91,7 +91,7 @@ namespace TdoTGuide.Server.Common
 
         private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, building, location, organizer, co_organizers FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, groups, departments, building, location, organizer, co_organizers FROM project", dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -101,7 +101,7 @@ namespace TdoTGuide.Server.Common
 
         private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, \"group\", departments, building, location, organizer, co_organizers FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand("SELECT id, title, description, groups, departments, building, location, organizer, co_organizers FROM project WHERE id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
@@ -113,11 +113,11 @@ namespace TdoTGuide.Server.Common
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, \"group\", departments, building, location, organizer, co_organizers) VALUES (@id, @title, @description, @group, @departments, @building, @location, @organizer, @co_organizers)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, groups, departments, building, location, organizer, co_organizers) VALUES (@id, @title, @description, @groups, @departments, @building, @location, @organizer, @co_organizers)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("groups", NpgsqlDbType.Jsonb, project.Groups);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
@@ -128,11 +128,11 @@ namespace TdoTGuide.Server.Common
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, \"group\"=@group, departments=@departments, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, groups=@groups, departments=@departments, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("group", (object?)project.Group ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("groups", NpgsqlDbType.Jsonb, project.Groups);
             cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
             cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
@@ -175,7 +175,7 @@ namespace TdoTGuide.Server.Common
             Guid Id,
             string Title,
             string Description,
-            string? Group,
+            IReadOnlyList<string> Groups,
             IReadOnlyCollection<int> Departments,
             int Building,
             string Location,
@@ -189,7 +189,7 @@ namespace TdoTGuide.Server.Common
                     reader.GetGuid(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.GetFieldValue<string[]>(3),
                     reader.GetFieldValue<int[]>(4),
                     reader.GetInt32(5),
                     reader.GetString(6),
@@ -204,7 +204,7 @@ namespace TdoTGuide.Server.Common
                     Guid.Parse(project.Id),
                     project.Title,
                     project.Description,
-                    project.Group,
+                    project.Groups,
                     [.. project.Departments.Select(int.Parse)],
                     int.Parse(project.Building),
                     project.Location,
@@ -219,7 +219,7 @@ namespace TdoTGuide.Server.Common
                     Id.ToString(),
                     Title,
                     Description,
-                    Group,
+                    Groups,
                     [.. Departments.Select(v => $"{v}")],
                     $"{Building}",
                     Location,

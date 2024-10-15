@@ -32,7 +32,7 @@
     {
         IEnumerable<ProjectDto> filteredProjects = projectList.Projects;
         filteredProjects = showOnlyUserProjects ? filteredProjects.Where(v => v.IsUserProject) : filteredProjects;
-        filteredProjects = filterGroup != null ? filteredProjects.Where(v => (v.Group ?? "") == filterGroup) : filteredProjects;
+        filteredProjects = filterGroup != null ? filteredProjects.Where(v => filterGroup.IsMatch(v.Groups)) : filteredProjects;
         filteredProjects = filterDepartment != null ? filteredProjects.Where(v => v.Departments.Contains(filterDepartment)) : filteredProjects;
         filteredProjects = filterBuilding != null ? filteredProjects.Where(v => v.Building == filterBuilding) : filteredProjects;
         List<ProjectDto> filteredProjectList = filteredProjects.ToList();
@@ -47,11 +47,17 @@
             </div>
 
             <div class="flex flex-col md:flex-row md:items-center gap-2">
-                @foreach (var group in projectList.Projects.Select(v => v.Group).Distinct().Order())
+                @{
+                    var groupFilters = projectList.Projects
+                        .SelectMany(v => v.Groups.Count > 0 ? v.Groups.Select(groupName => GroupFilter.IsInGroup(groupName)) : [GroupFilter.HasNoGroups()])
+                        .DistinctBy(v => v.DisplayName)
+                        .OrderBy(v => v.DisplayName);
+                }
+                @foreach (var groupFilter in groupFilters)
                 {
-                    var isSelected = (group ?? "") == filterGroup;
+                    var isSelected = groupFilter == filterGroup;
                     var classes = isSelected ? "btn btn-blue-selected" : "btn";
-                    <button type="button" @onclick=@(() => FilterProjectsByGroup(group ?? "")) class="@classes">@(group ?? "<Keine Gruppe>")</button>
+                    <button type="button" @onclick=@(() => FilterProjectsByGroup(groupFilter)) class="@classes">@groupFilter.DisplayName</button>
                 }
             </div>
 
@@ -92,7 +98,7 @@
     private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
     private ProjectListDto? projectList;
     private bool showOnlyUserProjects = false;
-    private string? filterGroup = null;
+    private GroupFilter? filterGroup = null;
     private string? filterDepartment = null;
     private string? filterBuilding = null;
 
@@ -114,7 +120,7 @@
         StateHasChanged();
     }
 
-    private void FilterProjectsByGroup(string group)
+    private void FilterProjectsByGroup(GroupFilter group)
     {
         filterGroup = filterGroup == group ? null : group;
     }
@@ -139,5 +145,11 @@
     {
         projectList = projectList! with { Projects = projectList.Projects.Except(new[] { project }).ToList() };
         StateHasChanged();
+    }
+    
+    record GroupFilter(string DisplayName, Func<IReadOnlyCollection<string>, bool> IsMatch)
+    {
+        public static GroupFilter IsInGroup(string groupName) => new(groupName, groups => groups.Contains(groupName));
+        public static GroupFilter HasNoGroups() => new("<Keine Gruppe>", groups => groups.Count == 0);
     }
 }

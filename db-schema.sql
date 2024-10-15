@@ -62,3 +62,8 @@ ALTER TABLE project ALTER COLUMN "building" SET NOT NULL;
 
 -- Remove time selection
 ALTER TABLE project DROP COLUMN "time_selection";
+
+-- Allow multiple groups
+ALTER TABLE project ADD COLUMN "groups" JSONB;
+UPDATE project SET groups = json_array("group");
+ALTER TABLE project DROP COLUMN "group";

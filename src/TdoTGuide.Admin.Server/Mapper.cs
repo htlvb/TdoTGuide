@@ -47,7 +47,7 @@ public static class Mapper
             projectId,
             projectData.Title,
             projectData.Description,
-            string.IsNullOrWhiteSpace(projectData.Group) ? null : projectData.Group,
+            [..projectData.Groups.Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v))],
             projectData.Departments,
             projectData.Building,
             projectData.Location,
