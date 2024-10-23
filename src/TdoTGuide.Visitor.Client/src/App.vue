@@ -23,13 +23,19 @@ const groups = computed(() => {
   return _.uniq(projectList.value.projects.flatMap(v => v.groups))
 })
 
-const selectedDepartments = ref<string[]>()
-const selectDepartment = (departmentId: string) => {
+type DepartmentFilter = ({ type: 'department' } & Dto.Department) | { type: 'all-departments', id: 'all-departments', longName: string, color: string }
+const departments = computed(() : DepartmentFilter[] => {
+  if (projectList.value === undefined) return []
+  return [{ type: 'all-departments', id: 'all-departments', longName: 'Allgemein', color: '#0A1B35' }, ...projectList.value.departments.map((v) : DepartmentFilter => ({ ...v, type: 'department' }))]
+})
+
+const selectedDepartments = ref<DepartmentFilter[]>()
+const selectDepartment = (department: DepartmentFilter) => {
   if (selectedDepartments.value === undefined) {
-    selectedDepartments.value = [ departmentId ]
+    selectedDepartments.value = [ department ]
   }
   else {
-    const index = selectedDepartments.value.indexOf(departmentId)
+    const index = selectedDepartments.value.indexOf(department)
     if (index >= 0) {
       selectedDepartments.value.splice(index, 1)
       if (selectedDepartments.value.length === 0) {
@@ -37,7 +43,7 @@ const selectDepartment = (departmentId: string) => {
       }
     }
     else {
-      selectedDepartments.value.push(departmentId)
+      selectedDepartments.value.push(department)
     }
   }
 }
@@ -52,16 +58,28 @@ const selectGroup = (groupId: string) => {
   selectedGroup.value = selectedGroup.value === groupId ? undefined : groupId
 }
 
+const departmentFiltersMatchProject = (project: Dto.Project, filters: DepartmentFilter[]) => {
+  if (projectList.value === undefined) return false
+  const numberOfDepartments = projectList.value.departments.length
+  if (filters.some(v => v.type === 'all-departments') && (project.departments.length === 0 || project.departments.length === numberOfDepartments)) {
+    return true
+  }
+  if (project.departments.length === 0 || project.departments.length === numberOfDepartments) {
+    return false
+  }
+  const departmentFilters = filters.filter(v => v.type === 'department').map(v => v.id)
+  return _.intersection(project.departments, departmentFilters).length > 0
+
+}
+
 const filteredProjects = computed(() => {
   if (projectList.value === undefined) return []
 
   let result = projectList.value.projects
 
   if (selectedDepartments.value !== undefined) {
-    result = result.filter(project =>
-      project.departments.length === 0
-      || _.intersection(project.departments, selectedDepartments.value).length > 0
-    )
+    const filters = selectedDepartments.value
+    result = result.filter(project => departmentFiltersMatchProject(project, filters))
   }
 
   if (selectedGroup.value !== undefined) {
@@ -101,13 +119,14 @@ const filteredProjects = computed(() => {
         <LoadingBar v-if="isLoadingProjects" />
         <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
         <section v-else-if="projectList !== undefined" class="flex flex-col gap-6 print:hidden">
+          <p class="text-2xl md:text-3xl text-center">&mdash; Wähle deine Kombination &mdash;</p>
           <section class="flex flex-col items-center gap-2 animation-fade-in">
             <p class="text-lg md:text-2xl text-center">Für welche Abteilungen interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
-              <button v-for="department in projectList.departments" :key="department.id"
-                @click="() => selectDepartment(department.id)"
+              <button v-for="department in departments" :key="department.id"
+                @click="() => selectDepartment(department)"
                 class="button text-white"
-                :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department.id) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
+                :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
             </div>
           </section>
           <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:1s]">

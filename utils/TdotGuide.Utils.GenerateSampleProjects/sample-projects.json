@@ -5,7 +5,7 @@
         "building": "1",
         "location": "R001",
         "description": "Entdecken Sie die **Welt des 3D-Drucks** und lernen Sie, wie aus digitalen Modellen reale Objekte werden.",
-        "departments": ["1", "2", "3"]
+        "departments": ["1", "2", "3", "4", "5", "6"]
     },
     {
         "name": "Robotik und Automation",
@@ -69,7 +69,7 @@
         "building": "2",
         "location": "L107",
         "description": "Einblick in die **Automatisierungstechnik** - von der Theorie zur Praxis.",
-        "departments": ["2", "5"]
+        "departments": []
     },
     {
         "name": "Anlagentechnik im Maschinenbau",

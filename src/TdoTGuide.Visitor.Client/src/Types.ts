@@ -1,4 +1,4 @@
-export module Dto {
+export namespace Dto {
   export type ProjectList = {
     projects: Project[]
     departments: Department[]
