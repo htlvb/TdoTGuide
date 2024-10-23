@@ -28,7 +28,7 @@ body {
     font-family: "Titillium Web", "serif";
 }
 html, body, #app {
-    height: 100%;
+    height: 100vh;
 }
 #app {
     @apply flex flex-col
