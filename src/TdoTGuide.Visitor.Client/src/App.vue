@@ -121,7 +121,7 @@ const filteredProjects = computed(() => {
         <section v-else-if="projectList !== undefined" class="flex flex-col gap-6 print:hidden">
           <p class="text-2xl md:text-3xl text-center">&mdash; Wähle deine Kombination &mdash;</p>
           <section class="flex flex-col items-center gap-2 animation-fade-in">
-            <p class="text-lg md:text-2xl text-center">Für welche Abteilungen interessierst du dich?</p>
+            <p class="text-lg md:text-2xl text-center">1. Für welche Abteilungen interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="department in departments" :key="department.id"
                 @click="() => selectDepartment(department)"
@@ -130,7 +130,7 @@ const filteredProjects = computed(() => {
             </div>
           </section>
           <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:1s]">
-            <p class="text-lg md:text-2xl text-center">Für welches Gebäude interessierst du dich?</p>
+            <p class="text-lg md:text-2xl text-center">2. Für welches Gebäude interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="building in projectList.buildings" :key="building.id"
                 @click="() => selectBuilding(building.id)"
@@ -139,7 +139,7 @@ const filteredProjects = computed(() => {
             </div>
           </section>
           <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:2s]">
-            <p class="text-lg md:text-2xl text-center">Für welche Projekte interessierst du dich?</p>
+            <p class="text-lg md:text-2xl text-center">3. Für welche Projekte interessierst du dich?</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="group in groups" :key="group"
                 @click="() => selectGroup(group)"
