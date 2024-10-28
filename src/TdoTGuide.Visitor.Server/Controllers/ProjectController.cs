@@ -37,7 +37,11 @@ public class ProjectController(
             projectTypes
                 .Select(projectType => projectType.Accept(new AnonymousSelectionTypeVisitor<List<ProjectTagDto>>(
                     (SimpleSelectionType selectionType) => [ new ProjectTagDto(null, selectionType.Title, selectionType.Color) ],
-                    (MultiSelectSelectionType selectionType) => [.. selectionType.Choices.Select(choice => new ProjectTagDto(choice.ShortName, choice.LongName, choice.Color))]
+                    (MultiSelectSelectionType selectionType) =>
+                        selectionType.Choices
+                            .Select(choice => new ProjectTagDto(choice.ShortName, choice.LongName, choice.Color))
+                            .OrderBy(v => v.LongName)
+                            .ToList()
                 )))
                 .ToList(),
             [.. buildings.Select(GetBuildingDtoFromDomain)]
@@ -72,6 +76,7 @@ public class ProjectController(
                 (MultiSelectSelectionType selectionType) => selectionType.Choices
                     .Where(choice => selection.SelectedValues.Contains(choice.Id))
                     .Select(v => new ProjectTagDto(v.ShortName, v.LongName, v.Color))
+                    .OrderBy(v => v.ShortName)
                     .ToList()
             )) ?? []
         ));
