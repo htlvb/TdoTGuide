@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Microsoft.Graph.Models.CallRecords;
 using TdoTGuide.Admin.Shared;
 using TdoTGuide.Server.Common;
 
@@ -19,8 +18,7 @@ public static class FakeData
                 Id: v.Random.Uuid().ToString(),
                 Title: v.Random.Words(),
                 Description: v.Lorem.Sentences(),
-                Groups: v.Random.WordsArray(0, 2),
-                Departments: v.Random.ArrayElements([.. Enumerable.Range(1, 10).Select(v => $"{v}")]),
+                Type: v.Random.ArrayElement(ProjectTypes),
                 Building: v.Random.Int(1, 3).ToString(),
                 Location: v.Address.BuildingNumber(),
                 Organizer: organizers.First(),
@@ -40,8 +38,7 @@ public static class FakeData
             return new EditingProjectDataDto(
                 Title: v.Random.Words(),
                 Description: v.Lorem.Sentences(),
-                Groups: v.Random.WordsArray(0, 2),
-                Departments: v.Random.ArrayElements([.. Enumerable.Range(0, 10).Select(v => $"{v}")]),
+                Type: v.Random.ArrayElement(ProjectTypeDtos),
                 MediaFileNames: v.Random.WordsArray(0, 5),
                 MediaFileNamesToRemove: v.Random.WordsArray(0, 5),
                 Building: v.Random.Int(1, 3).ToString(),
@@ -60,4 +57,18 @@ public static class FakeData
                 v.Random.String2(4).ToUpper()
             ))
         .Generate(10);
+
+    public static ISelection[] ProjectTypes { get; } = [
+        new SimpleSelection("general-info"),
+        new SimpleSelection("department-independent"),
+        new SimpleSelection("school-specific"),
+        new MultiSelectSelection("department-specific", new Faker().Random.ArrayElements([.. Enumerable.Range(1, 5).Select(v => $"{v}")]))
+    ];
+
+    public static SelectionReferenceDto[] ProjectTypeDtos { get; } = ProjectTypes
+        .Select(v => v.Accept(new AnonymousSelectionVisitor<SelectionReferenceDto>(
+            (SimpleSelection selection) => new SimpleSelectionReferenceDto(selection.Name),
+            (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
+        )))
+        .ToArray();
 }

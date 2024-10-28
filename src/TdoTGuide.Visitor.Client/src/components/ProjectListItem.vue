@@ -7,7 +7,6 @@ import MarkdownIt from 'markdown-it'
 
 const props = defineProps<{
   project: Dto.Project
-  departments: Dto.Department[]
   buildings: Dto.Building[]
 }>()
 
@@ -21,10 +20,6 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
 };
 const projectDescription = md.render(props.project.description)
 
-const projectDepartments = props.project.departments
-  .map(departmentId => props.departments.find(v => v.id === departmentId))
-  .filter((v): v is NonNullable<typeof v> => v !== undefined)
-
 const showMedia = ref(false)
 </script>
 
@@ -33,8 +28,17 @@ const showMedia = ref(false)
     <div class="flex flex-col gap-2 grow">
       <h3 class="text-xl">{{ project.title }}</h3>
       <p class="description" v-html="projectDescription"></p>
-      <div v-if="projectDepartments.length > 0" class="flex flex-wrap gap-2">
-        <ExpandableName v-for="department in projectDepartments" :key="department.id" :short-name="department.name" :long-name="department.longName" class="button !text-white" :style="{ 'background-color': department.color}" />
+      <div v-if="project.tags.length > 0" class="flex flex-wrap gap-2">
+        <template v-for="projectTag in project.tags" :key="projectTag.longName">
+          <ExpandableName v-if="projectTag.shortName !== null"
+            :short-name="projectTag.shortName"
+            :long-name="projectTag.longName"
+            class="button !text-white"
+            :style="{ 'background-color': projectTag.color}" />
+          <div v-else
+            class="button !cursor-auto !text-white"
+            :style="{ 'background-color': projectTag.color}">{{ projectTag.longName }}</div>
+        </template>
       </div>
       <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>
     </div>

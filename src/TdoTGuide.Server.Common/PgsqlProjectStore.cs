@@ -2,6 +2,7 @@
 using Npgsql;
 using NpgsqlTypes;
 using System.Data;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using TdoTGuide.Server.Common;
 
@@ -20,7 +21,7 @@ namespace TdoTGuide.Server.Common
 
         public async IAsyncEnumerable<Project> GetAll()
         {
-            List<DbProject> projects;
+            List<DbStoredProject> projects;
             await using (var dbConnection = await dataSource.OpenConnectionAsync())
             {
                 projects = await ReadAllProjects(dbConnection).ToList();
@@ -48,16 +49,6 @@ namespace TdoTGuide.Server.Common
             return dbProject.ToDomain();
         }
 
-        public async IAsyncEnumerable<string> GetProjectGroups()
-        {
-            await using var dbConnection = await dataSource.OpenConnectionAsync();
-            var groups = await dbConnection.QueryAsync<string>("SELECT DISTINCT jsonb_array_elements_text(groups) as \"group\" FROM project ORDER BY \"group\"");
-            foreach (var group in groups)
-            {
-                yield return group;
-            }
-        }
-
         public async Task Delete(string projectId)
         {
             if (!Guid.TryParse(projectId, out var projectGuid))
@@ -72,16 +63,23 @@ namespace TdoTGuide.Server.Common
 
         public async Task Create(Project project)
         {
-            var dbProject = DbProject.FromDomain(project);
+            var dbProject = DbNewProject.FromDomain(project);
             await using var dbConnection = await dataSource.OpenConnectionAsync();
             await CreateProject(dbConnection, dbProject);
         }
 
         public async Task Update(Project project)
         {
-            var dbProject = DbProject.FromDomain(project);
+            var dbProject = DbNewProject.FromDomain(project);
             await using var dbConnection = await dataSource.OpenConnectionAsync();
             await UpdateProject(dbConnection, dbProject);
+        }
+
+        public async Task<List<ISelectionType>> GetProjectTypes()
+        {
+            await using var dbConnection = await dataSource.OpenConnectionAsync();
+            var dbDepartments = await dbConnection.QueryAsync<DbSelectionType>("SELECT id, title, selection_data->>'type' as type, selection_data->>'color' as color, selection_data->'choices' as choices FROM project_type ORDER BY \"order\"");
+            return dbDepartments.Select(v => v.ToDomain()).ToList();
         }
 
         public void Dispose()
@@ -89,36 +87,49 @@ namespace TdoTGuide.Server.Common
             dataSource.Dispose();
         }
 
-        private static async IAsyncEnumerable<DbProject> ReadAllProjects(NpgsqlConnection dbConnection)
+        private static readonly string readProjectCommand = """
+            SELECT
+                p.id,
+                p.title,
+                p.description,
+                p.type || json_object('title': pt.title)::jsonb || pt.selection_data AS type,
+                p.building,
+                p.location,
+                p.organizer,
+                p.co_organizers
+            FROM project p
+            JOIN project_type pt on p.type->>'name' = pt.id
+            """;
+
+        private static async IAsyncEnumerable<DbStoredProject> ReadAllProjects(NpgsqlConnection dbConnection)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, groups, departments, building, location, organizer, co_organizers FROM project", dbConnection);
+            using var cmd = new NpgsqlCommand(readProjectCommand, dbConnection);
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                yield return DbProject.FromReader(reader);
+                yield return DbStoredProject.FromReader(reader);
             }
         }
 
-        private static async Task<DbProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
+        private static async Task<DbStoredProject?> ReadProject(NpgsqlConnection dbConnection, Guid projectGuid)
         {
-            using var cmd = new NpgsqlCommand("SELECT id, title, description, groups, departments, building, location, organizer, co_organizers FROM project WHERE id = @projectId", dbConnection);
+            using var cmd = new NpgsqlCommand($"{readProjectCommand} WHERE p.id = @projectId", dbConnection);
             cmd.Parameters.AddWithValue("projectId", projectGuid);
             await using var reader = await cmd.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
             {
                 return null;
             }
-            return DbProject.FromReader(reader);
+            return DbStoredProject.FromReader(reader);
         }
 
-        private static async Task CreateProject(NpgsqlConnection dbConnection, DbProject project)
+        private static async Task CreateProject(NpgsqlConnection dbConnection, DbNewProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, groups, departments, building, location, organizer, co_organizers) VALUES (@id, @title, @description, @groups, @departments, @building, @location, @organizer, @co_organizers)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, type, building, location, organizer, co_organizers) VALUES (@id, @title, @description, @type, @building, @location, @organizer, @co_organizers)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("groups", NpgsqlDbType.Jsonb, project.Groups);
-            cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
+            cmd.Parameters.AddWithValue("type", NpgsqlDbType.Jsonb, project.Type);
             cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
@@ -126,19 +137,59 @@ namespace TdoTGuide.Server.Common
             await cmd.ExecuteNonQueryAsync();
         }
 
-        private static async Task UpdateProject(NpgsqlConnection dbConnection, DbProject project)
+        private static async Task UpdateProject(NpgsqlConnection dbConnection, DbNewProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, groups=@groups, departments=@departments, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, type=@type, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
-            cmd.Parameters.AddWithValue("groups", NpgsqlDbType.Jsonb, project.Groups);
-            cmd.Parameters.AddWithValue("departments", NpgsqlDbType.Json, project.Departments);
+            cmd.Parameters.AddWithValue("type", NpgsqlDbType.Jsonb, project.Type);
             cmd.Parameters.AddWithValue("building", project.Building);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        private record DbSelection(
+#pragma warning disable IDE1006 // Naming Styles
+            string type,
+            string name,
+            string title,
+            string? color, // if type == 'simple'
+            int[]? selected_values, // if type == 'multi-select'
+            DbSelectionChoice[]? choices
+#pragma warning restore IDE1006 // Naming Styles
+        )
+        {
+            public ISelection ToDomain()
+            {
+                if (type == "simple")
+                {
+                    return new SimpleSelection(name);
+                }
+                else if (type == "multi-select")
+                {
+                    return new MultiSelectSelection(name, [.. selected_values!.Select(v => $"{v}")]);
+                }
+                throw new Exception($"Unknown selection type: \"{type}\"");
+            }
+        }
+
+        private record DbSelectionReference(
+#pragma warning disable IDE1006 // Naming Styles
+            string name,
+            [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]int[]? selected_values
+#pragma warning restore IDE1006 // Naming Styles
+        )
+        {
+            public static DbSelectionReference FromDomain(ISelection projectType)
+            {
+                return projectType.Accept(new AnonymousSelectionVisitor<DbSelectionReference>(
+                    (SimpleSelection selection) => new DbSelectionReference(selection.Name, null),
+                    (MultiSelectSelection selection) => new DbSelectionReference(selection.Name, [.. selection.SelectedValues.Select(int.Parse)])
+                ));
+            }
         }
 
         private record DbProjectOrganizer(
@@ -171,45 +222,28 @@ namespace TdoTGuide.Server.Common
             }
         }
 
-        private record DbProject(
+        private record DbStoredProject(
             Guid Id,
             string Title,
             string Description,
-            IReadOnlyList<string> Groups,
-            IReadOnlyCollection<int> Departments,
+            DbSelection Type,
             int Building,
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers
         )
         {
-            public static DbProject FromReader(NpgsqlDataReader reader)
+            public static DbStoredProject FromReader(NpgsqlDataReader reader)
             {
-                return new DbProject(
+                return new DbStoredProject(
                     reader.GetGuid(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.GetFieldValue<string[]>(3),
-                    reader.GetFieldValue<int[]>(4),
-                    reader.GetInt32(5),
-                    reader.GetString(6),
-                    reader.GetFieldValue<DbProjectOrganizer>(7),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(8)
-                );
-            }
-
-            public static DbProject FromDomain(Project project)
-            {
-                return new DbProject(
-                    Guid.Parse(project.Id),
-                    project.Title,
-                    project.Description,
-                    project.Groups,
-                    [.. project.Departments.Select(int.Parse)],
-                    int.Parse(project.Building),
-                    project.Location,
-                    DbProjectOrganizer.FromDomain(project.Organizer),
-                    project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList()
+                    reader.GetFieldValue<DbSelection>(3),
+                    reader.GetInt32(4),
+                    reader.GetString(5),
+                    reader.GetFieldValue<DbProjectOrganizer>(6),
+                    reader.GetFieldValue<DbProjectOrganizer[]>(7)
                 );
             }
 
@@ -219,13 +253,80 @@ namespace TdoTGuide.Server.Common
                     Id.ToString(),
                     Title,
                     Description,
-                    Groups,
-                    [.. Departments.Select(v => $"{v}")],
+                    Type.ToDomain(),
                     $"{Building}",
                     Location,
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList()
                 );
+            }
+        }
+
+        private record DbNewProject(
+            Guid Id,
+            string Title,
+            string Description,
+            DbSelectionReference Type,
+            int Building,
+            string Location,
+            DbProjectOrganizer Organizer,
+            IReadOnlyCollection<DbProjectOrganizer> CoOrganizers
+        )
+        {
+            public static DbNewProject FromDomain(Project project)
+            {
+                return new DbNewProject(
+                    Guid.Parse(project.Id),
+                    project.Title,
+                    project.Description,
+                    DbSelectionReference.FromDomain(project.Type),
+                    int.Parse(project.Building),
+                    project.Location,
+                    DbProjectOrganizer.FromDomain(project.Organizer),
+                    project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList()
+                );
+            }
+        }
+
+        private record DbSelectionType(
+#pragma warning disable IDE1006 // Naming Styles
+            string id,
+            string title,
+            string type,
+            string color, // if type == 'simple'
+            string choices // if type == 'multi-select'
+#pragma warning restore IDE1006 // Naming Styles
+            )
+        {
+            public ISelectionType ToDomain()
+            {
+                if (type == "simple")
+                {
+                    return new SimpleSelectionType(id, title, color!);
+                }
+                else if (type == "multi-select")
+                {
+                    return new MultiSelectSelectionType(id, title, [.. JsonSerializer.Deserialize<DbSelectionChoice[]>(choices!)!.Select(v => v.ToDomain())]);
+                }
+                else
+                {
+                    throw new Exception($"Unknown selection type: \"{type}\"");
+                }
+            }
+        }
+
+        private record DbSelectionChoice(
+#pragma warning disable IDE1006 // Naming Styles
+            int id,
+            string color,
+            string short_name,
+            string long_name
+#pragma warning restore IDE1006 // Naming Styles
+        )
+        {
+            public SelectionChoice ToDomain()
+            {
+                return new SelectionChoice($"{id}", color, short_name, long_name);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bogus;
 using Microsoft.Extensions.Configuration;
@@ -52,8 +53,7 @@ foreach (var projectData in projects) {
         projectId,
         projectData.Name,
         projectData.Description,
-        projectData.Groups,
-        projectData.Departments,
+        projectData.Type.ToDomain(),
         projectData.Building,
         projectData.Location,
         faker.PickRandom(organizers),
@@ -90,5 +90,21 @@ foreach (var projectData in projects) {
     }
 }
 
-record ProjectData(string Name, string[] Groups, string Building, string Location, string Description, string[] Departments);
+record ProjectData(string Name, string Building, string Location, string Description, SelectionReferenceJson Type);
+
+record SelectionReferenceJson(string Name, [property: JsonPropertyName("selected_values")] List<string>? SelectedValues)
+{
+    public ISelection ToDomain()
+    {
+        if (SelectedValues == null)
+        {
+            return new SimpleSelection(Name);
+        }
+        else
+        {
+            return new MultiSelectSelection(Name, SelectedValues);
+        }
+    }
+}
+
 record Organizer(string Id, string GivenName, string Surname, string UserPrincipalName);

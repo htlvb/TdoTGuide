@@ -9,17 +9,11 @@
         <div class="flex flex-col divide-y md:divide-y-0 divide-x-0 md:divide-x md:flex-row w-full">
             <div class="flex flex-col basis-1/5 shrink-0 p-2 gap-2">
                 <span class="text-xl text-black">@Project.Title</span>
-                <span>@(Project.Groups.Count == 0 ? "<Keine Gruppe>" : string.Join(", ", Project.Groups))</span>
                 <span class="flex gap-1">
-                    @{
-                        var projectDepartments = Project.Departments
-                            .Select(departmentId => AllDepartments.FirstOrDefault(v => v.Id == departmentId))
-                            .OfType<DepartmentDto>();
-                    }
-                    @foreach (var department in projectDepartments)
+                    @foreach (var tag in Project.Tags)
                     {
-                        var styles = $"background-color: {department.Color}";
-                        <span class="btn !cursor-auto text-white !rounded-lg" style="@styles">@department.Name</span>
+                        var styles = $"background-color: {tag.Color}";
+                        <span class="btn !cursor-auto text-white !rounded-lg" style="@styles">@tag.Name</span>
                     }
                 </span>
                 <span class="text-sm text-gray-600">
@@ -95,9 +89,6 @@
 
     [Parameter]
     public ProjectDto? Project { get; set; }
-
-    [Parameter]
-    public IReadOnlyList<DepartmentDto> AllDepartments { get; set; } = [];
 
     [Parameter]
     public IReadOnlyList<BuildingDto> AllBuildings { get; set; } = [];

@@ -4,7 +4,7 @@ namespace TdoTGuide.Admin.Server.IntegrationTests.Utils;
 
 public class InMemoryProjectStore : IProjectStore
 {
-    private readonly List<Project> projects = new();
+    private readonly List<Project> projects = [];
 
     public async IAsyncEnumerable<Project> GetAll()
     {
@@ -19,15 +19,6 @@ public class InMemoryProjectStore : IProjectStore
     {
         await Task.Yield();
         return projects.Find(v => v.Id == projectId);
-    }
-
-    public async IAsyncEnumerable<string> GetProjectGroups()
-    {
-        await Task.Yield();
-        foreach (var group in projects.SelectMany(v => v.Groups).Distinct())
-        {
-            yield return group;
-        }
     }
 
     public async Task Delete(string projectId)
@@ -51,5 +42,23 @@ public class InMemoryProjectStore : IProjectStore
             throw new Exception("Project cannot be updated because it doesn't exist.");
         }
         projects[index] = project;
+    }
+
+    public async Task<List<ISelectionType>> GetProjectTypes()
+    {
+        await Task.Yield();
+        return [
+            new SimpleSelectionType("1", "Allgemeine Infos und Anmeldung", "#000000AA"),
+            new SimpleSelectionType("2", "Abteilungsübergreifend", "#ACA100"),
+            new SimpleSelectionType("3", "Nur bei uns", "#B24DAD"),
+            new MultiSelectSelectionType("4", "Abteilungsspezifisch", [
+                new SelectionChoice("1", "#183c7b", "MB", "Maschinenbau - Anlagentechnik"),
+                new SelectionChoice("2", "#ad1410", "ME", "Mechatronik"),
+                new SelectionChoice("3", "#009ec6", "FS", "Fachschule Maschinenbau"),
+                new SelectionChoice("4", "#008040", "GT", "Gebäudetechnik"),
+                new SelectionChoice("5", "#e78a00", "IEM", "Industrial Engineering and Management"),
+                new SelectionChoice("6", "#6b1c52", "IEI", "Industrial Engineering and Informatics")
+            ]),
+        ];
     }
 }

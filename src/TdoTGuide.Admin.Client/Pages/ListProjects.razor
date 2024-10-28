@@ -32,8 +32,7 @@
     {
         IEnumerable<ProjectDto> filteredProjects = projectList.Projects;
         filteredProjects = showOnlyUserProjects ? filteredProjects.Where(v => v.IsUserProject) : filteredProjects;
-        filteredProjects = filterGroup != null ? filteredProjects.Where(v => filterGroup.IsMatch(v.Groups)) : filteredProjects;
-        filteredProjects = filterDepartment != null ? filteredProjects.Where(v => v.Departments.Contains(filterDepartment)) : filteredProjects;
+        filteredProjects = filterTags.Count > 0 ? filteredProjects.Where(v => v.Tags.Any(v => filterTags.Contains(v.Name))) : filteredProjects;
         filteredProjects = filterBuilding != null ? filteredProjects.Where(v => v.Building == filterBuilding) : filteredProjects;
         List<ProjectDto> filteredProjectList = filteredProjects.ToList();
 
@@ -47,26 +46,12 @@
             </div>
 
             <div class="flex flex-col md:flex-row md:items-center gap-2">
-                @{
-                    var groupFilters = projectList.Projects
-                        .SelectMany(v => v.Groups.Count > 0 ? v.Groups.Select(groupName => GroupFilter.IsInGroup(groupName)) : [GroupFilter.HasNoGroups()])
-                        .DistinctBy(v => v.DisplayName)
-                        .OrderBy(v => v.DisplayName);
-                }
-                @foreach (var groupFilter in groupFilters)
+                @foreach (var projectTag in projectList.AllProjectTags)
                 {
-                    var isSelected = groupFilter == filterGroup;
+                    var isSelected = filterTags.Contains(projectTag.Name);
                     var classes = isSelected ? "btn btn-blue-selected" : "btn";
-                    <button type="button" @onclick=@(() => FilterProjectsByGroup(groupFilter)) class="@classes">@groupFilter.DisplayName</button>
-                }
-            </div>
-
-            <div class="flex flex-col md:flex-row md:items-center gap-2">
-                @foreach (var department in projectList.AllDepartments)
-                {
-                    var isSelected = department.Id == filterDepartment;
-                    var styles = isSelected ? $"background-color: {department.Color}; color: white" : "";
-                    <button type="button" @onclick=@(() => FilterProjectsByDepartment(department.Id)) class="btn" style="@styles">@department.Name</button>
+                    var styles = isSelected ? $"background-color: {projectTag.Color}" : "";
+                    <button type="button" @onclick=@(() => ToggleProjectTagFilter(projectTag.Name)) class="@classes" style="@styles">@projectTag.Name</button>
                 }
             </div>
 
@@ -89,7 +74,7 @@
 
         @foreach (var project in filteredProjectList)
         {
-            <ProjectListItem @key=project Project="@project" AllDepartments="@projectList.AllDepartments" AllBuildings="@projectList.AllBuildings" OnUpdate="UpdateProject" OnDelete="@(() => RemoveProject(project))" />
+            <ProjectListItem @key=project Project="@project" AllBuildings="@projectList.AllBuildings" OnUpdate="UpdateProject" OnDelete="@(() => RemoveProject(project))" />
         }
     }
 </div>
@@ -98,8 +83,7 @@
     private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
     private ProjectListDto? projectList;
     private bool showOnlyUserProjects = false;
-    private GroupFilter? filterGroup = null;
-    private string? filterDepartment = null;
+    private List<string> filterTags = [];
     private string? filterBuilding = null;
 
     protected override async Task OnInitializedAsync()
@@ -120,14 +104,12 @@
         StateHasChanged();
     }
 
-    private void FilterProjectsByGroup(GroupFilter group)
+    private void ToggleProjectTagFilter(string tagName)
     {
-        filterGroup = filterGroup == group ? null : group;
-    }
-
-    private void FilterProjectsByDepartment(string departmentId)
-    {
-        filterDepartment = filterDepartment == departmentId ? null : departmentId;
+        if (!filterTags.Remove(tagName))
+        {
+            filterTags.Add(tagName);
+        }
     }
 
     private void FilterProjectsByBuilding(string building)
@@ -145,11 +127,5 @@
     {
         projectList = projectList! with { Projects = projectList.Projects.Except(new[] { project }).ToList() };
         StateHasChanged();
-    }
-    
-    record GroupFilter(string DisplayName, Func<IReadOnlyCollection<string>, bool> IsMatch)
-    {
-        public static GroupFilter IsInGroup(string groupName) => new(groupName, groups => groups.Contains(groupName));
-        public static GroupFilter HasNoGroups() => new("<Keine Gruppe>", groups => groups.Count == 0);
     }
 }

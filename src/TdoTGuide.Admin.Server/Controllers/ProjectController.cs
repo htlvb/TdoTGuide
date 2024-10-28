@@ -12,7 +12,6 @@ namespace TdoTGuide.Admin.Server.Controllers
     [Route("api/projects")]
     public class ProjectController(
         IProjectStore projectStore,
-        IDepartmentStore departmentStore,
         IBuildingStore buildingStore,
         IProjectMediaStore projectMediaStore,
         IUserStore userStore,
@@ -26,6 +25,7 @@ namespace TdoTGuide.Admin.Server.Controllers
         {
             var projects = await projectStore.GetAll().ToList();
             var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);
+            var projectTypes = await projectStore.GetProjectTypes();
             var projectDtos = new List<ProjectDto>();
             foreach (var project in projects)
             {
@@ -33,15 +33,19 @@ namespace TdoTGuide.Admin.Server.Controllers
                 {
                     media = [];
                 }
-                var projectDto = await GetProjectDtoFromProject(project, media);
+                var projectDto = await GetProjectDtoFromProject(project, media, projectTypes);
                 projectDtos.Add(projectDto);
             }
             var canCreateProject = (await authService.AuthorizeAsync(HttpContext.User, "CreateProject")).Succeeded;
-            var departments = await departmentStore.GetDepartments();
             var buildings = await buildingStore.GetBuildings();
             return new ProjectListDto(
                 projectDtos,
-                [.. departments.Select(GetDepartmentDtoFromDomain)],
+                projectTypes
+                    .SelectMany(projectType => projectType.Accept(new AnonymousSelectionTypeVisitor<IEnumerable<ProjectTagDto>>(
+                        (SimpleSelectionType selectionType) => [ new ProjectTagDto(selectionType.Title, selectionType.Color) ],
+                        (MultiSelectSelectionType selectionType) => [.. selectionType.Choices.Select(choice => new ProjectTagDto(choice.ShortName, choice.Color))]
+                    )))
+                    .ToArray(),
                 [.. buildings.Select(GetBuildingDtoFromDomain)],
                 new ProjectListLinksDto(
                     canCreateProject ? "projects/new" : default
@@ -76,16 +80,21 @@ namespace TdoTGuide.Admin.Server.Controllers
                     return Forbid();
                 }
 
-                var projectGroups = await projectStore.GetProjectGroups().ToList();
-                var departments = await departmentStore.GetDepartments();
+                var projectTypes = await projectStore.GetProjectTypes();
+                var defaultProjectTypeDto = projectTypes.First().Accept(new AnonymousSelectionTypeVisitor<ISelection>(
+                    (SimpleSelectionType selectionType) => new SimpleSelection(selectionType.Id),
+                    (MultiSelectSelectionType selectionType) => new MultiSelectSelection(selectionType.Id, [])
+                )).Accept(new AnonymousSelectionVisitor<SelectionReferenceDto>(
+                    (SimpleSelection selection) => new SimpleSelectionReferenceDto(selection.Name),
+                    (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
+                ));
                 var buildings = await buildingStore.GetBuildings();
 
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         Title: "",
                         Description: "",
-                        Groups: [],
-                        Departments: [],
+                        Type: defaultProjectTypeDto,
                         MediaFileNames: [],
                         MediaFileNamesToRemove: [],
                         Building: null,
@@ -93,8 +102,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         OrganizerId: UserId,
                         CoOrganizerIds: Array.Empty<string>()
                     ),
-                    projectGroups,
-                    [.. departments.Select(GetDepartmentDtoFromDomain)],
+                    [.. projectTypes.Select(GetSelectionTypeDtoFromDomain)],
                     [.. buildings.Select(GetBuildingDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
@@ -116,15 +124,13 @@ namespace TdoTGuide.Admin.Server.Controllers
                     return Forbid();
                 }
                 var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
-                var projectGroups = await projectStore.GetProjectGroups().ToList();
-                var departments = await departmentStore.GetDepartments();
+                var projectTypes = await projectStore.GetProjectTypes();
                 var buildings = await buildingStore.GetBuildings();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
                         project.Description,
-                        project.Groups,
-                        project.Departments,
+                        GetSelectedProjectTypeDtoFromDomain(project.Type),
                         projectMediaNames,
                         [],
                         project.Building,
@@ -132,8 +138,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                         project.Organizer.Id,
                         project.CoOrganizers.Select(v => v.Id).ToArray()
                     ),
-                    projectGroups,
-                    [.. departments.Select(GetDepartmentDtoFromDomain)],
+                    [.. projectTypes.Select(GetSelectionTypeDtoFromDomain)],
                     [.. buildings.Select(GetBuildingDtoFromDomain)],
                     organizerCandidates,
                     coOrganizerCandidates,
@@ -218,7 +223,15 @@ namespace TdoTGuide.Admin.Server.Controllers
             return organizerCandidates.ToDictionary(v => v.Id);
         }
 
-        private async Task<ProjectDto> GetProjectDtoFromProject(Project project, List<ProjectMedia> media)
+        private static SelectionReferenceDto GetSelectedProjectTypeDtoFromDomain(ISelection projectType)
+        {
+            return projectType.Accept(new AnonymousSelectionVisitor<SelectionReferenceDto>(
+                (SimpleSelection selection) => new SimpleSelectionReferenceDto(selection.Name),
+                (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
+            ));
+        }
+
+        private async Task<ProjectDto> GetProjectDtoFromProject(Project project, List<ProjectMedia> media, List<ISelectionType> projectTypes)
         {
             ProjectOrganizerDto mapOrganizer(ProjectOrganizer organizer)
             {
@@ -238,14 +251,26 @@ namespace TdoTGuide.Admin.Server.Controllers
                 return UserRoleForProjectDto.NotRelated;
             }
 
-            var userRole = getCurrentUserRole(project);
+            var projectTags = project.Type.Accept(new AnonymousSelectionVisitor<ProjectTagDto[]>(
+                (SimpleSelection selection) => projectTypes.Find(v => v.Id == selection.Name)?.Accept(new AnonymousSelectionTypeVisitor<ProjectTagDto[]>(
+                    (SimpleSelectionType selectionType) => [new ProjectTagDto(selectionType.Title, selectionType.Color)],
+                    (MultiSelectSelectionType _) => []
+                )) ?? [],
+                (MultiSelectSelection selection) => projectTypes.Find(v => v.Id == selection.Name)?.Accept(new AnonymousSelectionTypeVisitor<ProjectTagDto[]>(
+                    (SimpleSelectionType _) => [],
+                    (MultiSelectSelectionType selectionType) => selectionType.Choices
+                        .Where(choice => selection.SelectedValues.Contains(choice.Id))
+                        .Select(v => new ProjectTagDto(v.ShortName, v.Color))
+                        .ToArray()
+                )) ?? []
+            ));
+
             var canUpdate = (await authService.AuthorizeAsync(HttpContext.User, project, "UpdateProject")).Succeeded;
             var canDelete = (await authService.AuthorizeAsync(HttpContext.User, project, "DeleteProject")).Succeeded;
             return new ProjectDto(
                 project.Title,
                 project.Description,
-                project.Groups,
-                project.Departments,
+                projectTags,
                 project.Building,
                 project.Location,
                 mapOrganizer(project.Organizer),
@@ -270,9 +295,12 @@ namespace TdoTGuide.Admin.Server.Controllers
             return new ProjectMediaDto(type, media.Url);
         }
 
-        private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
+        private static SelectionTypeDto GetSelectionTypeDtoFromDomain(ISelectionType selectionType)
         {
-            return new(department.Id, department.Name, department.Color);
+            return selectionType.Accept(new AnonymousSelectionTypeVisitor<SelectionTypeDto>(
+                (SimpleSelectionType selectionType) => new SimpleSelectionTypeDto(selectionType.Id, selectionType.Title, selectionType.Color),
+                (MultiSelectSelectionType selectionType) => new MultiSelectSelectionTypeDto(selectionType.Id, selectionType.Title, [.. selectionType.Choices.Select(v => new SelectionItemDto(v.Id, v.Color, v.ShortName, v.LongName))])
+            ));
         }
 
         private static BuildingDto GetBuildingDtoFromDomain(Building building)

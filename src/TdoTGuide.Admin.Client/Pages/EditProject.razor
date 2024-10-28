@@ -52,30 +52,19 @@ else if (editingProject.Links.Save != null)
             </div>
 
             <div class="input">
-                <label class="block">
-                    <span class="input-label">Gruppe</span>
-                    <InputText @bind-Value=editingProject.Data.Groups list="project-groups" class="input-text w-full md:w-96" />
-                    <span class="text-xs">Aus bestehenden Gruppen wählen, neue definieren (z.B. Werkstätten, Activities), oder frei lassen. Mehrere Gruppen mit Beistrich trennen.</span>
-                    <datalist id="project-groups">
-                        @foreach (var groupName in editingProject.AllGroups)
-                        {
-                            <option value="@groupName"></option>
-                        }
-                    </datalist>
-                </label>
-            </div>
-
-            <div class="input">
-                <span class="input-label block">Abteilungen</span>
-                <div class="flex flex-row flex-wrap gap-2 mt-2">
-                    @foreach (var department in editingProject.AllDepartments)
+                <span class="input-label block">Projektart</span>
+                <InputRadioGroup @bind-Value=editingProject.Data.Type.ActiveSelectionId>
+                    @foreach (var projectType in editingProject.Data.Type.Selections)
                     {
-                        var isSelected = editingProject.Data.Departments.Contains(department.Id);
-                        var styles = isSelected ? $"background-color: {department.Color}" : "";
-                        var classes = $"btn text-white !rounded-lg {(isSelected ? "" : "!text-inherit")}";
-                        <button type="button" @onclick=@(() => ToggleSelectDepartment(department.Id)) value="@department.Id" class="@classes" style="@styles">@department.Name</button>
+                        <div>
+                            <label>
+                                <InputRadio Value=projectType.Id />
+                                <span class="text-sm">@projectType.Title</span>
+                            </label>
+                            @projectType.Render(projectType.Id == editingProject.Data.Type.ActiveSelectionId, () => StateHasChanged())
+                        </div>
                     }
-                </div>
+                </InputRadioGroup>
             </div>
 
             <div class="input">
@@ -96,10 +85,10 @@ else if (editingProject.Links.Save != null)
                     <span class="input-label">Gebäude</span>
                     <InputSelect @bind-Value=editingProject.Data.Building class="input-select">
                         <option value="">-- Bitte wählen --</option>
-                    @foreach (var building in editingProject.AllBuildings)
-                    {
-                        <option value=@building.Id>@building.Name</option>
-                    }
+                        @foreach (var building in editingProject.AllBuildings)
+                        {
+                            <option value=@building.Id>@building.Name</option>
+                        }
                     </InputSelect>
                 </label>
             </div>
@@ -110,7 +99,7 @@ else if (editingProject.Links.Save != null)
                     <InputText @bind-Value=editingProject.Data.Location class="input-text w-full md:w-96" />
                 </label>
             </div>
-    
+
             <div class="input">
                 <label class="block">
                     <span class="input-label">Organisator</span>
@@ -123,10 +112,10 @@ else if (editingProject.Links.Save != null)
                     else
                     {
                         <InputSelect @bind-Value=editingProject.Data.OrganizerId class="input-select">
-                        @foreach (var person in editingProject.OrganizerCandidates)
-                        {
-                            <option value=@person.Id>@person.DisplayName</option>
-                        }
+                            @foreach (var person in editingProject.OrganizerCandidates)
+                            {
+                                <option value=@person.Id>@person.DisplayName</option>
+                            }
                         </InputSelect>
                     }
                 </label>
@@ -136,10 +125,10 @@ else if (editingProject.Links.Save != null)
                 <label class="block">
                     <span class="input-label">Betreuer</span>
                     <InputSelect @bind-Value=editingProject.Data.CoOrganizerIds class="input-select" size="15">
-                    @foreach (var person in editingProject.CoOrganizerCandidates)
-                    {
-                        <option value=@person.Id>@person.DisplayName</option>
-                    }
+                        @foreach (var person in editingProject.CoOrganizerCandidates)
+                        {
+                            <option value=@person.Id>@person.DisplayName</option>
+                        }
                     </InputSelect>
                 </label>
                 <span class="text-xs inline-block pt-2">Tipp: Halte die <kbd>Strg</kbd>-Taste gedrückt, um mehrere Betreuer auszuwählen.</span>
@@ -195,18 +184,6 @@ else if (editingProject.Links.Save != null)
         catch (AccessTokenNotAvailableException exception)
         {
             exception.Redirect();
-        }
-    }
-
-    private void ToggleSelectDepartment(string departmentId)
-    {
-        if (editingProject == null)
-        {
-            return;
-        }
-        if (!editingProject.Data.Departments.Remove(departmentId))
-        {
-            editingProject.Data.Departments.Add(departmentId);
         }
     }
 
@@ -268,8 +245,6 @@ else if (editingProject.Links.Save != null)
 
     public record EditingProject(
         EditingProjectData Data,
-        IReadOnlyCollection<string> AllGroups,
-        IReadOnlyCollection<DepartmentDto> AllDepartments,
         IReadOnlyCollection<BuildingDto> AllBuildings,
         IReadOnlyCollection<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyCollection<ProjectOrganizerDto> CoOrganizerCandidates,
@@ -279,9 +254,7 @@ else if (editingProject.Links.Save != null)
         public static EditingProject FromProject(EditingProjectDto project)
         {
             return new EditingProject(
-                EditingProjectData.FromProjectData(project.Data),
-                project.AllGroups,
-                project.AllDepartments,
+                EditingProjectData.FromProjectData(project.Data, project.AllProjectTypes),
                 project.AllBuildings,
                 project.OrganizerCandidates,
                 project.CoOrganizerCandidates,
@@ -296,8 +269,7 @@ else if (editingProject.Links.Save != null)
         public string Title { get; set; } = "";
         [Required(ErrorMessage = "Beschreibung darf nicht leer sein.")]
         public string Description { get; set; } = "";
-        public required string Groups { get; set; }
-        public required List<string> Departments { get; init; }
+        public required EditingProjectType Type { get; init; }
         [Required(ErrorMessage = "Gebäude muss ausgewählt werden.")]
         public required string? Building { get; set; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
@@ -308,14 +280,13 @@ else if (editingProject.Links.Save != null)
         public string? OrganizerId { get; set; }
         public string[] CoOrganizerIds { get; set; } = Array.Empty<string>();
 
-        public static EditingProjectData FromProjectData(EditingProjectDataDto projectData)
+        public static EditingProjectData FromProjectData(EditingProjectDataDto projectData, IReadOnlyCollection<SelectionTypeDto> projectTypes)
         {
             return new EditingProjectData
             {
                 Title = projectData.Title,
                 Description = projectData.Description,
-                Groups = string.Join(", ", projectData.Groups),
-                Departments = [.. projectData.Departments],
+                Type = EditingProjectType.FromDto(projectTypes, projectData.Type),
                 Building = projectData.Building,
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
@@ -329,8 +300,7 @@ else if (editingProject.Links.Save != null)
             return new EditingProjectDataDto(
                 Title,
                 Description,
-                Groups.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-                Departments,
+                Type.Selections.First(v => v.Id == Type.ActiveSelectionId).ToDto(),
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],
                 Building,
@@ -339,6 +309,93 @@ else if (editingProject.Links.Save != null)
                 CoOrganizerIds
             );
         }
+    }
+
+    public class EditingProjectType
+    {
+        public required string ActiveSelectionId { get; set; }
+        public required IReadOnlyCollection<ISelection> Selections { get; init; }
+
+        public static EditingProjectType FromDto(IReadOnlyCollection<SelectionTypeDto> projectTypes, SelectionReferenceDto selectedProjectType)
+        {
+            var selections = projectTypes
+                .Select(projectType => projectType.Accept(new AnonymousSelectionTypeDtoVisitor<ISelection>(
+                    (SimpleSelectionTypeDto selectionType) => new SimpleSelection(selectionType.Id, selectionType.Title),
+                    (MultiSelectSelectionTypeDto selectionType) =>
+                    {
+                        var selectedValues = selectedProjectType.Accept(new AnonymousSelectionReferenceDtoVisitor<string[]>(
+                            (SimpleSelectionReferenceDto selection) => [],
+                            (MultiSelectSelectionReferenceDto selection) => selection.SelectedValues
+                        ));
+                        var items = selectionType.Items
+                            .Select(v => new SelectionValue(v.Id, v.ShortName, v.Color, IsSelected: selectedValues.Contains(v.Id)))
+                            .ToArray();
+                        return new MultiSelectSelection(selectionType.Id, selectionType.Title, items);
+                    }
+                )))
+                .ToArray();
+            return new EditingProjectType
+            {
+                ActiveSelectionId = selectedProjectType.Name,
+                Selections = selections
+            };
+        }
+    }
+
+    public interface ISelection
+    {
+        string Id { get; }
+        string Title { get; }
+        RenderFragment Render(bool isActive, Action notifyStateChanged);
+        SelectionReferenceDto ToDto();
+    }
+
+    public class SimpleSelection(string id, string title) : ISelection
+    {
+        public string Id { get; } = id;
+        public string Title { get; } = title;
+
+        public RenderFragment Render(bool isActive, Action notifyStateChanged)
+        {
+            return __builder => {};
+        }
+
+        public SelectionReferenceDto ToDto()
+        {
+            return new SimpleSelectionReferenceDto(Id);
+        }
+    }
+
+    public class MultiSelectSelection(string id, string title, IReadOnlyCollection<SelectionValue> items) : ISelection
+    {
+        public string Id { get; } = id;
+        public string Title { get; } = title;
+        public IReadOnlyCollection<SelectionValue> Items { get; } = items;
+
+        public RenderFragment Render(bool isActive, Action notifyStateChanged)
+        {
+            return __builder =>
+            {
+                <div class="flex flex-row flex-wrap gap-2 ml-4">
+                @foreach (var item in Items)
+                {
+                    var styles = item.IsSelected ? $"background-color: {item.Color}" : "";
+                    var classes = $"btn text-white !rounded-lg {(item.IsSelected ? "" : "!text-inherit")}";
+                    <button type="button" @onclick=@(() => { item.IsSelected = !item.IsSelected; notifyStateChanged(); }) value="@item.Id" disabled=@(!isActive) class="@classes" style="@styles">@item.Title</button>
+                }
+                </div>
+            };
+        }
+
+        public SelectionReferenceDto ToDto()
+        {
+            return new MultiSelectSelectionReferenceDto(Id, [.. Items.Where(v => v.IsSelected).Select(v => v.Id)]);
+        }
+    }
+
+    public record SelectionValue(string Id, string Title, string Color, bool IsSelected)
+    {
+        public bool IsSelected { get; set; } = IsSelected;
     }
 
     public class ExistingMedia

@@ -1,7 +1,7 @@
 export namespace Dto {
   export type ProjectList = {
     projects: Project[]
-    departments: Department[]
+    projectTags: ProjectTag[][]
     buildings: Building[]
   }
 
@@ -9,16 +9,14 @@ export namespace Dto {
     id: string
     title: string
     description: string
-    groups: string[]
-    departments: string[]
+    tags: ProjectTag[]
     building: string
     location: string
     media: ProjectMedia[]
   }
 
-  export type Department = {
-    id: string
-    name: string
+  export type ProjectTag = {
+    shortName: string | null
     longName: string
     color: string
   }

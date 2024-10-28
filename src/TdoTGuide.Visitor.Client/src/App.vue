@@ -5,7 +5,6 @@ import LoadingBar from './components/LoadingBar.vue'
 import ErrorWithRetry from './components/ErrorWithRetry.vue'
 import ProjectListItem from './components/ProjectListItem.vue'
 import type { Dto } from './Types'
-import _ from 'lodash'
 
 const projectList = ref<Dto.ProjectList>()
 const isLoadingProjects = ref(false)
@@ -18,33 +17,14 @@ const loadProjects = async () => {
 }
 loadProjects()
 
-const groups = computed(() => {
-  if (projectList.value === undefined) return []
-  return _.uniq(projectList.value.projects.flatMap(v => v.groups))
-})
-
-type DepartmentFilter = ({ type: 'department' } & Dto.Department) | { type: 'all-departments', id: 'all-departments', longName: string, color: string }
-const departments = computed(() : DepartmentFilter[] => {
-  if (projectList.value === undefined) return []
-  return [{ type: 'all-departments', id: 'all-departments', longName: 'Allgemein', color: '#0A1B35' }, ...projectList.value.departments.map((v) : DepartmentFilter => ({ ...v, type: 'department' }))]
-})
-
-const selectedDepartments = ref<DepartmentFilter[]>()
-const selectDepartment = (department: DepartmentFilter) => {
-  if (selectedDepartments.value === undefined) {
-    selectedDepartments.value = [ department ]
+const selectedTags = ref([] as Dto.ProjectTag[])
+const toggleProjectTagFilter = (projectTag: Dto.ProjectTag) => {
+  const index = selectedTags.value.indexOf(projectTag)
+  if (index >= 0) {
+    selectedTags.value.splice(index, 1)
   }
   else {
-    const index = selectedDepartments.value.indexOf(department)
-    if (index >= 0) {
-      selectedDepartments.value.splice(index, 1)
-      if (selectedDepartments.value.length === 0) {
-        selectedDepartments.value = undefined
-      }
-    }
-    else {
-      selectedDepartments.value.push(department)
-    }
+    selectedTags.value.push(projectTag)
   }
 }
 
@@ -53,38 +33,14 @@ const selectBuilding = (buildingId: string) => {
   selectedBuilding.value = selectedBuilding.value === buildingId ? undefined : buildingId
 }
 
-const selectedGroup = ref<string>()
-const selectGroup = (groupId: string) => {
-  selectedGroup.value = selectedGroup.value === groupId ? undefined : groupId
-}
-
-const departmentFiltersMatchProject = (project: Dto.Project, filters: DepartmentFilter[]) => {
-  if (projectList.value === undefined) return false
-  const numberOfDepartments = projectList.value.departments.length
-  if (filters.some(v => v.type === 'all-departments') && (project.departments.length === 0 || project.departments.length === numberOfDepartments)) {
-    return true
-  }
-  if (project.departments.length === 0 || project.departments.length === numberOfDepartments) {
-    return false
-  }
-  const departmentFilters = filters.filter(v => v.type === 'department').map(v => v.id)
-  return _.intersection(project.departments, departmentFilters).length > 0
-
-}
-
 const filteredProjects = computed(() => {
   if (projectList.value === undefined) return []
 
   let result = projectList.value.projects
 
-  if (selectedDepartments.value !== undefined) {
-    const filters = selectedDepartments.value
-    result = result.filter(project => departmentFiltersMatchProject(project, filters))
-  }
-
-  if (selectedGroup.value !== undefined) {
-    const selectedGroupName = selectedGroup.value
-    result = result.filter(project => project.groups.includes(selectedGroupName))
+  if (selectedTags.value.length > 0) {
+    const filters = selectedTags.value.map(v => v.longName)
+    result = result.filter(project => project.tags.some(projectTag => filters.includes(projectTag.longName)))
   }
 
   if (selectedBuilding.value !== undefined) {
@@ -119,32 +75,25 @@ const filteredProjects = computed(() => {
         <LoadingBar v-if="isLoadingProjects" />
         <ErrorWithRetry v-else-if="hasLoadingProjectsFailed" @retry="loadProjects">😱 Fehler beim Laden der Angebote.</ErrorWithRetry>
         <section v-else-if="projectList !== undefined" class="flex flex-col gap-6 print:hidden">
-          <p class="text-2xl md:text-3xl text-center">&mdash; Wähle deine Kombination &mdash;</p>
+          <p class="text-2xl md:text-3xl text-center">&mdash; Triff deine Auswahl &mdash;</p>
           <section class="flex flex-col items-center gap-2 animation-fade-in">
-            <p class="text-lg md:text-2xl text-center">1. Für welche Abteilungen interessierst du dich?</p>
-            <div class="flex flex-row flex-wrap justify-center gap-2">
-              <button v-for="department in departments" :key="department.id"
-                @click="() => selectDepartment(department)"
-                class="button text-white"
-                :style="{ 'background-color': (selectedDepartments === undefined || selectedDepartments.indexOf(department) >= 0 ? department.color : undefined) }">{{ department.longName }}</button>
+            <div class="flex flex-col gap-2">
+              <div v-for="projectTagGroup in projectList.projectTags" :key="JSON.stringify(projectTagGroup)"
+                class="flex flex-row flex-wrap justify-center gap-2">
+                <button v-for="projectTag in projectTagGroup" :key="projectTag.longName"
+                  @click="() => toggleProjectTagFilter(projectTag)"
+                  class="button text-white"
+                  :style="{ 'background-color': (selectedTags.length === 0 || selectedTags.indexOf(projectTag) >= 0 ? projectTag.color : undefined) }">{{ projectTag.longName }}</button>
+              </div>
             </div>
           </section>
           <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:1s]">
-            <p class="text-lg md:text-2xl text-center">2. Für welches Gebäude interessierst du dich?</p>
+            <p class="text-lg md:text-2xl text-center">Optional: Nur Angebote im ausgewählten Gebäude anzeigen</p>
             <div class="flex flex-row flex-wrap justify-center gap-2">
               <button v-for="building in projectList.buildings" :key="building.id"
                 @click="() => selectBuilding(building.id)"
                 class="button text-white"
                 :class="{ 'button-htlvb-selected': selectedBuilding === building.id }">{{ building.name }}</button>
-            </div>
-          </section>
-          <section class="flex flex-col items-center gap-2 animation-fade-in ![animation-delay:2s]">
-            <p class="text-lg md:text-2xl text-center">3. Für welche Projekte interessierst du dich?</p>
-            <div class="flex flex-row flex-wrap justify-center gap-2">
-              <button v-for="group in groups" :key="group"
-                @click="() => selectGroup(group)"
-                class="button text-white"
-                :class="{ 'button-htlvb-selected': selectedGroup === group }">{{ group }}</button>
             </div>
           </section>
           <section class="self-stretch flex flex-col gap-4 mt-4 animation-fade-in ![animation-delay:3s] print:hidden">
@@ -153,7 +102,6 @@ const filteredProjects = computed(() => {
             </span>
             <ProjectListItem v-for="project in filteredProjects" :key="JSON.stringify(project)"
               :project="project"
-              :departments="projectList.departments"
               :buildings="projectList.buildings" />
           </section>
         </section>

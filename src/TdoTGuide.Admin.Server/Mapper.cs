@@ -18,6 +18,10 @@ public static class Mapper
             errorMessage = "Project title must not be empty.";
             return false;
         }
+        var projectType = projectData.Type.Accept(new AnonymousSelectionReferenceDtoVisitor<ISelection>(
+            (SimpleSelectionReferenceDto selectionReference) => new SimpleSelection(selectionReference.Name),
+            (MultiSelectSelectionReferenceDto selectionReference) => new MultiSelectSelection(selectionReference.Name, selectionReference.SelectedValues)
+        ));
         if (projectData.Building is null)
         {
             project = null;
@@ -47,8 +51,7 @@ public static class Mapper
             projectId,
             projectData.Title,
             projectData.Description,
-            [..projectData.Groups.Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v))],
-            projectData.Departments,
+            projectType,
             projectData.Building,
             projectData.Location,
             organizer,

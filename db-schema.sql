@@ -67,3 +67,25 @@ ALTER TABLE project DROP COLUMN "time_selection";
 ALTER TABLE project ADD COLUMN "groups" JSONB;
 UPDATE project SET groups = json_array("group");
 ALTER TABLE project DROP COLUMN "group";
+
+-- Combine groups and department to project type
+ALTER TABLE project ADD COLUMN "type" JSONB;
+UPDATE project SET type = json_object('name': 'general-info') WHERE json_array_length(departments) = 0;
+UPDATE project SET type = json_object('name': 'department-independent') WHERE json_array_length(departments) = (SELECT COUNT(*) FROM department);
+UPDATE project SET type = json_object('name': 'department-specific', 'selected_values': departments) WHERE type IS NULL;
+ALTER TABLE project ALTER COLUMN "type" SET NOT NULL;
+ALTER TABLE project DROP COLUMN "departments";
+ALTER TABLE project DROP COLUMN "groups";
+
+CREATE TABLE project_type(
+    id VARCHAR PRIMARY KEY NOT NULL,
+    "order" INT NOT NULL,
+    title VARCHAR NOT NULL,
+    selection_data JSONB
+);
+INSERT INTO project_type (id, "order", title, selection_data) VALUES
+    ('general-info', 1, 'Allgemeine Infos und Anmeldung', json_object('type': 'simple', 'color': '#000000AA')),
+    ('department-independent', 2, 'Abteilungsübergreifend', json_object('type': 'simple', 'color': '#ACA100')),
+    ('school-specific', 3, 'Nur bei uns', json_object('type': 'simple', 'color': '#B24DAD')),
+    ('department-specific', 4, 'Abteilungsspezifisch', json_object('type': 'multi-select', 'choices': json_array(select json_object('id': id, 'short_name': name, 'long_name': long_name, 'color': color) from department)));
+DROP TABLE department;

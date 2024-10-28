@@ -7,7 +7,6 @@ namespace TdoTGuide.Visitor.Server.Controllers;
 [Route("api/projects")]
 public class ProjectController(
     IProjectStore projectStore,
-    IDepartmentStore departmentStore,
     IBuildingStore buildingStore,
     IProjectMediaStore projectMediaStore,
     IHostEnvironment env) : ControllerBase
@@ -20,7 +19,7 @@ public class ProjectController(
             throw new Exception("Chaos engineering exception");
         }
         var projects = await projectStore.GetAll().ToList();
-        var departments = await departmentStore.GetDepartments();
+        var projectTypes = await projectStore.GetProjectTypes();
         var buildings = await buildingStore.GetBuildings();
         var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);
         var projectDtos = new List<ProjectDto>();
@@ -30,36 +29,52 @@ public class ProjectController(
             {
                 media = [];
             }
-            var projectDto = GetProjectDtoFromProject(project, media);
-            projectDto.Departments.Sort((d1, d2) => departments.FindIndex(v => v.Id == d1).CompareTo(departments.FindIndex(v => v.Id == d2)));
+            var projectDto = GetProjectDtoFromProject(project, media, projectTypes);
             projectDtos.Add(projectDto);
         }
         return new ProjectListDto(
             projectDtos,
-            [.. departments.Select(GetDepartmentDtoFromDomain)],
+            projectTypes
+                .Select(projectType => projectType.Accept(new AnonymousSelectionTypeVisitor<List<ProjectTagDto>>(
+                    (SimpleSelectionType selectionType) => [ new ProjectTagDto(null, selectionType.Title, selectionType.Color) ],
+                    (MultiSelectSelectionType selectionType) => [.. selectionType.Choices.Select(choice => new ProjectTagDto(choice.ShortName, choice.LongName, choice.Color))]
+                )))
+                .ToList(),
             [.. buildings.Select(GetBuildingDtoFromDomain)]
         );
     }
 
     private ProjectDto GetProjectDtoFromProject(
         Project project,
-        List<ProjectMedia> media)
+        List<ProjectMedia> media,
+        List<ISelectionType> projectTypes)
     {
         return new ProjectDto(
             project.Id,
             project.Title,
             project.Description,
-            [.. project.Groups],
-            [.. project.Departments],
+            GetProjectTagDtos(project.Type, projectTypes),
             project.Building,
             project.Location,
             [.. media.Select(GetProjectMediaDtoFromDomain)]
         );
     }
 
-    private static DepartmentDto GetDepartmentDtoFromDomain(Department department)
+    private static List<ProjectTagDto> GetProjectTagDtos(ISelection type, List<ISelectionType> projectTypes)
     {
-        return new(department.Id, department.Name, department.LongName, department.Color);
+        return type.Accept(new AnonymousSelectionVisitor<List<ProjectTagDto>>(
+            (SimpleSelection selection) => projectTypes.Find(v => v.Id == selection.Name)?.Accept(new AnonymousSelectionTypeVisitor<List<ProjectTagDto>>(
+                (SimpleSelectionType selectionType) => [new ProjectTagDto(null, selectionType.Title, selectionType.Color)],
+                (MultiSelectSelectionType _) => []
+            )) ?? [],
+            (MultiSelectSelection selection) => projectTypes.Find(v => v.Id == selection.Name)?.Accept(new AnonymousSelectionTypeVisitor<List<ProjectTagDto>>(
+                (SimpleSelectionType _) => [],
+                (MultiSelectSelectionType selectionType) => selectionType.Choices
+                    .Where(choice => selection.SelectedValues.Contains(choice.Id))
+                    .Select(v => new ProjectTagDto(v.ShortName, v.LongName, v.Color))
+                    .ToList()
+            )) ?? []
+        ));
     }
 
     private static BuildingDto GetBuildingDtoFromDomain(Building building)

@@ -97,8 +97,10 @@ public class CreateProjectTests
         var editProject = new EditingProjectDataDto(
             project.Title,
             project.Description,
-            project.Groups,
-            project.Departments,
+            project.Type.Accept(new AnonymousSelectionVisitor<SelectionReferenceDto>(
+                (SimpleSelection selection) => new SimpleSelectionReferenceDto(selection.Name),
+                (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
+            )),
             ["1.jpg", "2.mp4"],
             [],
             project.Building,
@@ -128,8 +130,10 @@ public class CreateProjectTests
         var projectUpdate = new EditingProjectDataDto(
             project.Title,
             project.Description,
-            project.Groups,
-            project.Departments,
+            project.Type.Accept(new AnonymousSelectionVisitor<SelectionReferenceDto>(
+                (SimpleSelection selection) => new SimpleSelectionReferenceDto(selection.Name),
+                (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
+            )),
             ["4.png", "5.mp4"],
             ["1.jpg", "3.mp4"],
             project.Building,
