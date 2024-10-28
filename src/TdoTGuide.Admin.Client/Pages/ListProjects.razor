@@ -50,7 +50,7 @@
                 {
                     var isSelected = filterTags.Contains(projectTag.Name);
                     var classes = isSelected ? "btn btn-blue-selected" : "btn";
-                    var styles = isSelected ? $"background-color: {projectTag.Color}" : "";
+                    var styles = isSelected ? $"background: {projectTag.Color}" : "";
                     <button type="button" @onclick=@(() => ToggleProjectTagFilter(projectTag.Name)) class="@classes" style="@styles">@projectTag.Name</button>
                 }
             </div>

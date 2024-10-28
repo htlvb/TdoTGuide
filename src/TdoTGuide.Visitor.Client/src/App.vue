@@ -83,7 +83,7 @@ const filteredProjects = computed(() => {
                 <button v-for="projectTag in projectTagGroup" :key="projectTag.longName"
                   @click="() => toggleProjectTagFilter(projectTag)"
                   class="button text-white"
-                  :style="{ 'background-color': (selectedTags.length === 0 || selectedTags.indexOf(projectTag) >= 0 ? projectTag.color : undefined) }">{{ projectTag.longName }}</button>
+                  :style="{ 'background': (selectedTags.length === 0 || selectedTags.indexOf(projectTag) >= 0 ? projectTag.color : undefined) }">{{ projectTag.longName }}</button>
               </div>
             </div>
           </section>

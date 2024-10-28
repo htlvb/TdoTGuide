@@ -379,7 +379,7 @@ else if (editingProject.Links.Save != null)
                 <div class="flex flex-row flex-wrap gap-2 ml-4">
                 @foreach (var item in Items)
                 {
-                    var styles = item.IsSelected ? $"background-color: {item.Color}" : "";
+                    var styles = item.IsSelected ? $"background: {item.Color}" : "";
                     var classes = $"btn text-white !rounded-lg {(item.IsSelected ? "" : "!text-inherit")}";
                     <button type="button" @onclick=@(() => { item.IsSelected = !item.IsSelected; notifyStateChanged(); }) value="@item.Id" disabled=@(!isActive) class="@classes" style="@styles">@item.Title</button>
                 }

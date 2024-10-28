@@ -34,10 +34,10 @@ const showMedia = ref(false)
             :short-name="projectTag.shortName"
             :long-name="projectTag.longName"
             class="button !text-white"
-            :style="{ 'background-color': projectTag.color}" />
+            :style="{ 'background': projectTag.color}" />
           <div v-else
             class="button !cursor-auto !text-white"
-            :style="{ 'background-color': projectTag.color}">{{ projectTag.longName }}</div>
+            :style="{ 'background': projectTag.color}">{{ projectTag.longName }}</div>
         </template>
       </div>
       <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>

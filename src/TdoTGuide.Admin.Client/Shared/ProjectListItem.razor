@@ -12,7 +12,7 @@
                 <span class="flex gap-1">
                     @foreach (var tag in Project.Tags)
                     {
-                        var styles = $"background-color: {tag.Color}";
+                        var styles = $"background: {tag.Color}";
                         <span class="btn !cursor-auto text-white !rounded-lg" style="@styles">@tag.Name</span>
                     }
                 </span>
