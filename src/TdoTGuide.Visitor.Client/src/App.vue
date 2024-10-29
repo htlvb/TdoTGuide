@@ -96,7 +96,7 @@ const filteredProjects = computed(() => {
                 :class="{ 'button-htlvb-selected': selectedBuilding === building.id }">{{ building.name }}</button>
             </div>
           </section>
-          <section class="self-stretch flex flex-col gap-4 mt-4 animation-fade-in ![animation-delay:3s] print:hidden">
+          <section class="self-stretch flex flex-col gap-4 mt-4 animation-fade-in ![animation-delay:2s] print:hidden">
             <span v-if="filteredProjects.length === 0" class="self-center">
               😥 Keine Angebote gefunden
             </span>
