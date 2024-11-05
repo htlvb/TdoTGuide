@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Npgsql;
 using NpgsqlTypes;
+using System;
 using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -82,6 +83,13 @@ namespace TdoTGuide.Server.Common
             return dbDepartments.Select(v => v.ToDomain()).ToList();
         }
 
+        public async Task<List<string>> GetFloors()
+        {
+            await using var dbConnection = await dataSource.OpenConnectionAsync();
+            var floors = await dbConnection.QueryAsync<string>("SELECT DISTINCT(floor) FROM project WHERE floor IS NOT NULL ORDER BY floor");
+            return [.. floors];
+        }
+
         public void Dispose()
         {
             dataSource.Dispose();
@@ -94,6 +102,7 @@ namespace TdoTGuide.Server.Common
                 p.description,
                 p.type || json_object('title': pt.title)::jsonb || pt.selection_data AS type,
                 p.building,
+                p.floor,
                 p.location,
                 p.organizer,
                 p.co_organizers
@@ -125,12 +134,13 @@ namespace TdoTGuide.Server.Common
 
         private static async Task CreateProject(NpgsqlConnection dbConnection, DbNewProject project)
         {
-            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, type, building, location, organizer, co_organizers) VALUES (@id, @title, @description, @type, @building, @location, @organizer, @co_organizers)", dbConnection);
+            using var cmd = new NpgsqlCommand("INSERT INTO project (id, title, description, type, building, floor, location, organizer, co_organizers) VALUES (@id, @title, @description, @type, @building, @floor, @location, @organizer, @co_organizers)", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("type", NpgsqlDbType.Jsonb, project.Type);
             cmd.Parameters.AddWithValue("building", project.Building);
+            cmd.Parameters.AddWithValue("floor", (object?)project.Floor ?? DBNull.Value);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -139,12 +149,13 @@ namespace TdoTGuide.Server.Common
 
         private static async Task UpdateProject(NpgsqlConnection dbConnection, DbNewProject project)
         {
-            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, type=@type, building=@building, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
+            using var cmd = new NpgsqlCommand("UPDATE project SET title=@title, description=@description, type=@type, building=@building, floor=@floor, location=@location, organizer=@organizer, co_organizers=@co_organizers WHERE id=@id", dbConnection);
             cmd.Parameters.AddWithValue("id", project.Id);
             cmd.Parameters.AddWithValue("title", project.Title);
             cmd.Parameters.AddWithValue("description", project.Description);
             cmd.Parameters.AddWithValue("type", NpgsqlDbType.Jsonb, project.Type);
             cmd.Parameters.AddWithValue("building", project.Building);
+            cmd.Parameters.AddWithValue("floor", (object?)project.Floor ?? DBNull.Value);
             cmd.Parameters.AddWithValue("location", project.Location);
             cmd.Parameters.AddWithValue("organizer", NpgsqlDbType.Json, project.Organizer);
             cmd.Parameters.AddWithValue("co_organizers", NpgsqlDbType.Json, project.CoOrganizers);
@@ -228,6 +239,7 @@ namespace TdoTGuide.Server.Common
             string Description,
             DbSelection Type,
             int Building,
+            string? Floor,
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers
@@ -241,9 +253,10 @@ namespace TdoTGuide.Server.Common
                     reader.GetString(2),
                     reader.GetFieldValue<DbSelection>(3),
                     reader.GetInt32(4),
-                    reader.GetString(5),
-                    reader.GetFieldValue<DbProjectOrganizer>(6),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(7)
+                    !reader.IsDBNull(5) ? reader.GetString(5) : null,
+                    reader.GetString(6),
+                    reader.GetFieldValue<DbProjectOrganizer>(7),
+                    reader.GetFieldValue<DbProjectOrganizer[]>(8)
                 );
             }
 
@@ -255,6 +268,7 @@ namespace TdoTGuide.Server.Common
                     Description,
                     Type.ToDomain(),
                     $"{Building}",
+                    Floor,
                     Location,
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList()
@@ -268,6 +282,7 @@ namespace TdoTGuide.Server.Common
             string Description,
             DbSelectionReference Type,
             int Building,
+            string? Floor,
             string Location,
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers
@@ -281,6 +296,7 @@ namespace TdoTGuide.Server.Common
                     project.Description,
                     DbSelectionReference.FromDomain(project.Type),
                     int.Parse(project.Building),
+                    project.Floor,
                     project.Location,
                     DbProjectOrganizer.FromDomain(project.Organizer),
                     project.CoOrganizers.Select(DbProjectOrganizer.FromDomain).ToList()

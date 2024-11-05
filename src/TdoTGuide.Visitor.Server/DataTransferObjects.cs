@@ -12,6 +12,7 @@ public record ProjectDto(
     string Description,
     List<ProjectTagDto> Tags,
     string Building,
+    string? Floor,
     string Location,
     List<ProjectMediaDto> Media);
 

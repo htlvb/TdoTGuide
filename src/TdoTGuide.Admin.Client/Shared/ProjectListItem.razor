@@ -23,7 +23,11 @@
                         <text>, @coOrganizer.DisplayName</text>
                     }
                 </span>
-                <span class="text-sm text-gray-600">@Project.Location (@(AllBuildings.FirstOrDefault(v => v.Id == Project.Building)?.Name ?? "unbekanntes Gebäude"))</span>
+                <span class="text-sm text-gray-600">
+                    @{
+                        var buildingName = AllBuildings.FirstOrDefault(v => v.Id == Project.Building)?.Name ?? "unbekanntes Gebäude";
+                    }
+                    @Project.Location (@buildingName@(Project.Floor != null ? $", {Project.Floor}" : ""))</span>
             </div>
             <div class="grow flex flex-col p-2">
                 <div class="description grow">

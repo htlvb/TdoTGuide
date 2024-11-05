@@ -59,6 +59,7 @@ public class ProjectController(
             project.Description,
             GetProjectTagDtos(project.Type, projectTypes),
             project.Building,
+            project.Floor,
             project.Location,
             [.. media.Select(GetProjectMediaDtoFromDomain)]
         );

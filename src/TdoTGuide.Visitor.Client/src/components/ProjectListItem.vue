@@ -40,7 +40,7 @@ const showMedia = ref(false)
             :style="{ 'background': projectTag.color}">{{ projectTag.longName }}</div>
         </template>
       </div>
-      <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }})</p>
+      <p><span class="font-bold">Wo:</span> {{ project.location }} ({{ buildings.find(v => v.id === project.building)?.name ?? "unbekanntes Gebäude" }}{{ project.floor !== null ? `, ${project.floor}` : '' }})</p>
     </div>
     <div v-if="showMedia">
       <div class="flex flex-col md:flex-row md:flex-wrap items-center gap-2">

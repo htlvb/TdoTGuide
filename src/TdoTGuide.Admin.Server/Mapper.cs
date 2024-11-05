@@ -53,6 +53,7 @@ public static class Mapper
             projectData.Description,
             projectType,
             projectData.Building,
+            !string.IsNullOrWhiteSpace(projectData.Floor) ? projectData.Floor : null,
             projectData.Location,
             organizer,
             coOrganizers

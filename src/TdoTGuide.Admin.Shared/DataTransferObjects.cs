@@ -6,6 +6,7 @@ namespace TdoTGuide.Admin.Shared
         EditingProjectDataDto Data,
         IReadOnlyList<SelectionTypeDto> AllProjectTypes,
         IReadOnlyList<BuildingDto> AllBuildings,
+        IReadOnlyList<string> AllFloors,
         IReadOnlyList<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -18,6 +19,7 @@ namespace TdoTGuide.Admin.Shared
         IReadOnlyList<string> MediaFileNames,
         IReadOnlyList<string> MediaFileNamesToRemove,
         string? Building,
+        string? Floor,
         string Location,
         string OrganizerId,
         IReadOnlyList<string> CoOrganizerIds
@@ -131,6 +133,7 @@ namespace TdoTGuide.Admin.Shared
         string Description,
         IReadOnlyCollection<ProjectTagDto> Tags,
         string Building,
+        string? Floor,
         string Location,
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,

@@ -89,3 +89,6 @@ INSERT INTO project_type (id, "order", title, selection_data) VALUES
     ('school-specific', 3, 'Nur bei uns', json_object('type': 'simple', 'color': '#B24DAD')),
     ('department-specific', 4, 'Abteilungsspezifisch', json_object('type': 'multi-select', 'choices': json_array(select json_object('id': id, 'short_name': name, 'long_name': long_name, 'color': color) from department)));
 DROP TABLE department;
+
+-- Add building floors
+ALTER TABLE project ADD COLUMN floor VARCHAR;

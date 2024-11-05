@@ -95,6 +95,19 @@ else if (editingProject.Links.Save != null)
 
             <div class="input">
                 <label class="block">
+                    <span class="input-label">Stockwerk (optional)</span>
+                    <InputText @bind-Value=editingProject.Data.Floor list="floors" class="input-text w-full md:w-96" />
+                    <datalist id="floors">
+                        @foreach (var floor in editingProject.AllFloors)
+                        {
+                            <option value="@floor"></option>
+                        }
+                    </datalist>
+                </label>
+            </div>
+
+            <div class="input">
+                <label class="block">
                     <span class="input-label">Ort</span>
                     <InputText @bind-Value=editingProject.Data.Location class="input-text w-full md:w-96" />
                 </label>
@@ -246,6 +259,7 @@ else if (editingProject.Links.Save != null)
     public record EditingProject(
         EditingProjectData Data,
         IReadOnlyCollection<BuildingDto> AllBuildings,
+        IReadOnlyCollection<string> AllFloors,
         IReadOnlyCollection<ProjectOrganizerDto> OrganizerCandidates,
         IReadOnlyCollection<ProjectOrganizerDto> CoOrganizerCandidates,
         EditingProjectLinksDto Links
@@ -256,6 +270,7 @@ else if (editingProject.Links.Save != null)
             return new EditingProject(
                 EditingProjectData.FromProjectData(project.Data, project.AllProjectTypes),
                 project.AllBuildings,
+                project.AllFloors,
                 project.OrganizerCandidates,
                 project.CoOrganizerCandidates,
                 project.Links
@@ -272,6 +287,7 @@ else if (editingProject.Links.Save != null)
         public required EditingProjectType Type { get; init; }
         [Required(ErrorMessage = "Gebäude muss ausgewählt werden.")]
         public required string? Building { get; set; }
+        public required string? Floor { get; set; }
         public List<ExistingMedia> ExistingMedia { get; set; } = [];
         public List<string> NewMediaNames { get; set; } = [];
         [Required(ErrorMessage = "Ort darf nicht leer sein.")]
@@ -288,6 +304,7 @@ else if (editingProject.Links.Save != null)
                 Description = projectData.Description,
                 Type = EditingProjectType.FromDto(projectTypes, projectData.Type),
                 Building = projectData.Building,
+                Floor = projectData.Floor,
                 ExistingMedia = [.. projectData.MediaFileNames.Select(v => new ExistingMedia(v, remove: false))],
                 Location = projectData.Location,
                 OrganizerId = projectData.OrganizerId,
@@ -304,6 +321,7 @@ else if (editingProject.Links.Save != null)
                 NewMediaNames,
                 [.. ExistingMedia.Where(v => v.Remove).Select(v => v.Name)],
                 Building,
+                Floor,
                 Location,
                 OrganizerId ?? throw new InvalidOperationException("Organizer is empty. Did you forget to validate?"),
                 CoOrganizerIds

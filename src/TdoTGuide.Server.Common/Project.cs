@@ -6,6 +6,7 @@ public sealed record Project(
     string Description,
     ISelection Type,
     string Building,
+    string? Floor,
     string Location,
     ProjectOrganizer Organizer,
     IReadOnlyList<ProjectOrganizer> CoOrganizers

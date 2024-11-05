@@ -8,5 +8,6 @@
         Task Create(Project project);
         Task Update(Project project);
         Task<List<ISelectionType>> GetProjectTypes();
+        Task<List<string>> GetFloors();
     }
 }

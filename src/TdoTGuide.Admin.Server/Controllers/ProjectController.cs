@@ -89,6 +89,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                     (MultiSelectSelection selection) => new MultiSelectSelectionReferenceDto(selection.Name, [.. selection.SelectedValues])
                 ));
                 var buildings = await buildingStore.GetBuildings();
+                var floors = await projectStore.GetFloors();
 
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
@@ -98,12 +99,14 @@ namespace TdoTGuide.Admin.Server.Controllers
                         MediaFileNames: [],
                         MediaFileNamesToRemove: [],
                         Building: null,
+                        Floor: null,
                         Location: "",
                         OrganizerId: UserId,
                         CoOrganizerIds: Array.Empty<string>()
                     ),
                     [.. projectTypes.Select(GetSelectionTypeDtoFromDomain)],
                     [.. buildings.Select(GetBuildingDtoFromDomain)],
+                    [.. floors],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -126,6 +129,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                 var projectMediaNames = await projectMediaStore.GetAllMediaNames(project.Id).ToList();
                 var projectTypes = await projectStore.GetProjectTypes();
                 var buildings = await buildingStore.GetBuildings();
+                var floors = await projectStore.GetFloors();
                 var result = new EditingProjectDto(
                     new EditingProjectDataDto(
                         project.Title,
@@ -134,12 +138,14 @@ namespace TdoTGuide.Admin.Server.Controllers
                         projectMediaNames,
                         [],
                         project.Building,
+                        project.Floor,
                         project.Location,
                         project.Organizer.Id,
                         project.CoOrganizers.Select(v => v.Id).ToArray()
                     ),
                     [.. projectTypes.Select(GetSelectionTypeDtoFromDomain)],
                     [.. buildings.Select(GetBuildingDtoFromDomain)],
+                    [.. floors],
                     organizerCandidates,
                     coOrganizerCandidates,
                     new EditingProjectLinksDto(
@@ -272,6 +278,7 @@ namespace TdoTGuide.Admin.Server.Controllers
                 project.Description,
                 projectTags,
                 project.Building,
+                project.Floor,
                 project.Location,
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),

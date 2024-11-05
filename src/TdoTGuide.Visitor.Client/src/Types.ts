@@ -11,6 +11,7 @@ export namespace Dto {
     description: string
     tags: ProjectTag[]
     building: string
+    floor: string | null
     location: string
     media: ProjectMedia[]
   }
