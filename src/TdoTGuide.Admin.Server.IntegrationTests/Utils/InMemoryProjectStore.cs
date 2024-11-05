@@ -61,4 +61,10 @@ public class InMemoryProjectStore : IProjectStore
             ]),
         ];
     }
+
+    public async Task<List<string>> GetFloors()
+    {
+        await Task.Yield();
+        return [.. projects.Select(v => v.Floor).OfType<string>().Distinct().Order()];
+    }
 }

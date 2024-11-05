@@ -104,6 +104,7 @@ public class CreateProjectTests
             ["1.jpg", "2.mp4"],
             [],
             project.Building,
+            project.Floor,
             project.Location,
             project.Organizer.Id,
             [.. project.CoOrganizers.Select(v => v.Id)]
@@ -137,6 +138,7 @@ public class CreateProjectTests
             ["4.png", "5.mp4"],
             ["1.jpg", "3.mp4"],
             project.Building,
+            project.Floor,
             project.Location,
             project.Organizer.Id,
             [.. project.CoOrganizers.Select(v => v.Id)]

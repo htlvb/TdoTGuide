@@ -3,6 +3,7 @@
         "name": "3D-Druck",
         "groups": ["Technik", "Design"],
         "building": "1",
+        "floor": "1. OG",
         "location": "R001",
         "description": "Entdecken Sie die **Welt des 3D-Drucks** und lernen Sie, wie aus digitalen Modellen reale Objekte werden.",
         "type": { "name": "department-independent" }
@@ -11,6 +12,7 @@
         "name": "Robotik und Automation",
         "groups": ["Technik"],
         "building": "2",
+        "floor": "EG",
         "location": "L105",
         "description": "Erleben Sie in unserer **Robotik-Demonstration** die Zukunft der Automatisierung.",
         "type": { "name": "department-specific", "selected_values": ["2", "3", "5"] }
@@ -19,6 +21,7 @@
         "name": "Energieeffizienz im Gebäude",
         "groups": ["Gebaeudetechnik"],
         "building": "3",
+        "floor": "EG",
         "location": "W032",
         "description": "Erfahren Sie mehr über **moderne Lösungen** zur Steigerung der Energieeffizienz in Gebäuden.",
         "type": { "name": "department-specific", "selected_values": ["4"] }
@@ -27,6 +30,7 @@
         "name": "CNC-Fräsen",
         "groups": ["Technik"],
         "building": "1",
+        "floor": "EG",
         "location": "R002",
         "description": "Eine **Live-Demonstration** unserer CNC-Fräsmaschinen - Präzision trifft auf Technologie.",
         "type": { "name": "department-specific", "selected_values": ["1", "3"] }
@@ -35,6 +39,7 @@
         "name": "Industrielle Messtechnik",
         "groups": ["Technik"],
         "building": "2",
+        "floor": "EG",
         "location": "L106",
         "description": "Erfahren Sie, wie **präzise Messverfahren** in der Industrie angewendet werden.",
         "type": { "name": "department-specific", "selected_values": ["2", "3", "5"] }

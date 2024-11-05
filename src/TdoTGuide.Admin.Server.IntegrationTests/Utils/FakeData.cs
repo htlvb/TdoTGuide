@@ -20,6 +20,7 @@ public static class FakeData
                 Description: v.Lorem.Sentences(),
                 Type: v.Random.ArrayElement(ProjectTypes),
                 Building: v.Random.Int(1, 3).ToString(),
+                Floor: $"{v.Random.Int(-1, 2)}",
                 Location: v.Address.BuildingNumber(),
                 Organizer: organizers.First(),
                 CoOrganizers: organizers.Skip(1).ToList()
@@ -42,6 +43,7 @@ public static class FakeData
                 MediaFileNames: v.Random.WordsArray(0, 5),
                 MediaFileNamesToRemove: v.Random.WordsArray(0, 5),
                 Building: v.Random.Int(1, 3).ToString(),
+                Floor: $"{v.Random.Int(-1, 2)}",
                 Location: v.Address.BuildingNumber(),
                 OrganizerId: organizerIds.First(),
                 CoOrganizerIds: organizerIds.Skip(1).ToList()

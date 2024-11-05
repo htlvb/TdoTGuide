@@ -55,6 +55,7 @@ foreach (var projectData in projects) {
         projectData.Description,
         projectData.Type.ToDomain(),
         projectData.Building,
+        projectData.Floor,
         projectData.Location,
         faker.PickRandom(organizers),
         faker.Random.ListItems((IList<ProjectOrganizer>)organizers, faker.Random.Number(0, 3)));
@@ -90,7 +91,7 @@ foreach (var projectData in projects) {
     }
 }
 
-record ProjectData(string Name, string Building, string Location, string Description, SelectionReferenceJson Type);
+record ProjectData(string Name, string Building, string? Floor, string Location, string Description, SelectionReferenceJson Type);
 
 record SelectionReferenceJson(string Name, [property: JsonPropertyName("selected_values")] List<string>? SelectedValues)
 {
