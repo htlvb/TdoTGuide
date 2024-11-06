@@ -27,8 +27,11 @@
 body {
     font-family: "Titillium Web", "serif";
 }
+html {
+    @apply bg-cover bg-top bg-[url('@/assets/bg.jpg')] bg-[#183f7c]
+}
 html, body, #app {
-    height: 100vh;
+    @apply h-full print:h-auto
 }
 #app {
     @apply flex flex-col
