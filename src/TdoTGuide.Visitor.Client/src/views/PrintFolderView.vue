@@ -18,11 +18,20 @@ loadProjects()
 const projectGroups = computed(() => {
   if (projectList.value === undefined) return
   return {
-    'theorie-ug': sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor === 'Untergeschoss'), v => v.title),
-    'theorie-eg': sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor === 'Erdgeschoss'), v => v.title),
-    'theorie-og': sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor !== null && /\d+\.\s*Stock/.test(v.floor)), v => v.title),
-    'werkstaette': sortBy(projectList.value.projects.filter(v => v.building === '3'), v => v.title),
-    'labor': sortBy(projectList.value.projects.filter(v => v.building === '2'), v => v.title),
+    theorie: {
+      name: projectList.value.buildings.find(v => v.id === '1')?.name || '',
+      ug: sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor === 'Untergeschoss'), v => v.title),
+      eg: sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor === 'Erdgeschoss'), v => v.title),
+      og: sortBy(projectList.value.projects.filter(v => v.building === '1' && v.floor !== null && /\d+\.\s*Stock/.test(v.floor)), v => v.title)
+    },
+    werkstaette: {
+      name: projectList.value.buildings.find(v => v.id === '3')?.name || '',
+      projects: sortBy(projectList.value.projects.filter(v => v.building === '3'), v => v.title)
+    },
+    labor: {
+      name: projectList.value.buildings.find(v => v.id === '2')?.name || '',
+      projects: sortBy(projectList.value.projects.filter(v => v.building === '2'), v => v.title)
+    }
   }
 })
 </script>
@@ -31,15 +40,15 @@ const projectGroups = computed(() => {
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
       <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.werkstaette" :key="project.id" class="text-lg">{{ project.title }}</li>
+        <li v-for="project in projectGroups.werkstaette.projects" :key="project.id" class="text-lg">{{ project.title }}</li>
       </ol>
-      <div class="text-center text-3xl small-caps">Werkstättengebäude</div>
+      <div class="text-center text-3xl small-caps">{{ projectGroups?.werkstaette.name }}</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
       <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.labor" :key="project.id" class="text-lg">{{ project.title }}</li>
+        <li v-for="project in projectGroups.labor.projects" :key="project.id" class="text-lg">{{ project.title }}</li>
       </ol>
-      <div class="text-center text-3xl small-caps">Laborgebäude</div>
+      <div class="text-center text-3xl small-caps">{{ projectGroups?.labor.name }}</div>
     </div>
     <div>
       <div class="flex flex-col items-center gap-4">
@@ -68,20 +77,20 @@ const projectGroups = computed(() => {
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
       <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups['theorie-ug']" :key="project.id" class="text-lg">{{ project.title }}</li>
+        <li v-for="project in projectGroups.theorie.ug" :key="project.id" class="text-lg">{{ project.title }}</li>
       </ol>
       <div class="text-center text-3xl small-caps">UG</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
-      <div class="text-center text-3xl">Theorie<br />EG</div>
+      <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}<br />EG</div>
       <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups['theorie-eg']" :key="project.id" class="text-lg">{{ project.title }}</li>
+        <li v-for="project in projectGroups.theorie.eg" :key="project.id" class="text-lg">{{ project.title }}</li>
       </ol>
       <div class="text-center text-3xl">www.htlvb.at</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
       <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups['theorie-og']" :key="project.id" class="text-lg">{{ project.title }}</li>
+        <li v-for="project in projectGroups.theorie.og" :key="project.id" class="text-lg">{{ project.title }}</li>
       </ol>
       <div class="text-center text-3xl small-caps">OG</div>
     </div>
