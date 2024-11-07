@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue'
 import type { Dto } from '@/Types'
 import uiFetch from '@/UIFetch'
-import { sortBy } from 'lodash-es'
+import { groupBy, sortBy } from 'lodash-es'
+import PrintFolderProjectList from './PrintFolderProjectList.vue';
 
 const projectList = ref<Dto.ProjectList>()
 const isLoadingProjects = ref(false)
@@ -39,16 +40,14 @@ const projectGroups = computed(() => {
 <template>
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
-      <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.werkstaette.projects" :key="project.id" class="text-lg">{{ project.title }}</li>
-      </ol>
       <div class="text-center text-3xl small-caps">{{ projectGroups?.werkstaette.name }}</div>
+      <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.werkstaette.projects"
+        class="flex-grow flex flex-col justify-center gap-4" />
     </div>
     <div class="flex flex-col gap-4 p-4">
-      <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.labor.projects" :key="project.id" class="text-lg">{{ project.title }}</li>
-      </ol>
       <div class="text-center text-3xl small-caps">{{ projectGroups?.labor.name }}</div>
+      <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.labor.projects"
+        class="flex-grow flex flex-col justify-center gap-4" />
     </div>
     <div>
       <div class="flex flex-col items-center gap-4">
@@ -76,23 +75,18 @@ const projectGroups = computed(() => {
   </section>
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
-      <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.theorie.ug" :key="project.id" class="text-lg">{{ project.title }}</li>
-      </ol>
-      <div class="text-center text-3xl small-caps">UG</div>
+      <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.ug"
+        class="flex-grow flex flex-col justify-center gap-4" />
     </div>
     <div class="flex flex-col gap-4 p-4">
-      <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}<br />EG</div>
-      <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.theorie.eg" :key="project.id" class="text-lg">{{ project.title }}</li>
-      </ol>
+      <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}</div>
+      <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.eg"
+        class="flex-grow flex flex-col justify-center gap-4" />
       <div class="text-center text-3xl">www.htlvb.at</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
-      <ol v-if="projectGroups !== undefined" contenteditable="true" class="list-decimal list-outside ml-8 flex-grow">
-        <li v-for="project in projectGroups.theorie.og" :key="project.id" class="text-lg">{{ project.title }}</li>
-      </ol>
-      <div class="text-center text-3xl small-caps">OG</div>
+      <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.og"
+        class="flex-grow flex flex-col justify-center gap-4" />
     </div>
   </section>
 </template>
