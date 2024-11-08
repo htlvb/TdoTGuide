@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue'
 import type { Dto } from '@/Types'
 import uiFetch from '@/UIFetch'
-import { groupBy, sortBy } from 'lodash-es'
-import PrintFolderProjectList from './PrintFolderProjectList.vue';
+import { sortBy } from 'lodash-es'
+import PrintFolderProjectList from './PrintFolderProjectList.vue'
 
 const projectList = ref<Dto.ProjectList>()
 const isLoadingProjects = ref(false)

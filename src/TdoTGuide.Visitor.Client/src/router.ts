@@ -7,7 +7,8 @@ const routes = [
     children: [
       { path: '', component: () => import('@/views/PrintOverviewView.vue') },
       { path: 'flyer', component: () => import('@/views/PrintFlyerView.vue') },
-      { path: 'folder', component: () => import('@/views/PrintFolderView.vue') }
+      { path: 'folder', component: () => import('@/views/PrintFolderView.vue') },
+      { path: 'building-overview/:buildingId?', component: () => import('@/views/BuildingsOverviewView.vue') }
     ]
   },
 ]
