@@ -75,6 +75,7 @@ const projectGroups = computed(() => {
   </section>
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
+      <div class="text-center text-3xl">&nbsp;</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.ug"
         class="flex-grow flex flex-col gap-4" />
     </div>
@@ -85,6 +86,7 @@ const projectGroups = computed(() => {
       <div class="text-center text-3xl">www.htlvb.at</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
+      <div class="text-center text-3xl">&nbsp;</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.og"
         class="flex-grow flex flex-col gap-4" />
     </div>
