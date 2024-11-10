@@ -14,7 +14,9 @@ public record ProjectDto(
     string Building,
     string? Floor,
     string Location,
-    List<ProjectMediaDto> Media);
+    List<ProjectMediaDto> Media,
+    bool ShowInPrintOverview,
+    string? PrintOverviewGroupName);
 
 public record ProjectTagDto(string? ShortName, string LongName, string Color);
 

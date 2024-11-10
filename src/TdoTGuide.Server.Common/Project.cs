@@ -9,7 +9,9 @@ public sealed record Project(
     string? Floor,
     string Location,
     ProjectOrganizer Organizer,
-    IReadOnlyList<ProjectOrganizer> CoOrganizers
+    IReadOnlyList<ProjectOrganizer> CoOrganizers,
+    bool ShowInPrintOverview,
+    string? PrintOverviewGroupName
 );
 
 public interface ISelection

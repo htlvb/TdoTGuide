@@ -105,7 +105,9 @@ namespace TdoTGuide.Server.Common
                 p.floor,
                 p.location,
                 p.organizer,
-                p.co_organizers
+                p.co_organizers,
+                p.show_in_print_overview,
+                p.print_overview_group_name
             FROM project p
             JOIN project_type pt on p.type->>'name' = pt.id
             """;
@@ -242,7 +244,9 @@ namespace TdoTGuide.Server.Common
             string? Floor,
             string Location,
             DbProjectOrganizer Organizer,
-            IReadOnlyCollection<DbProjectOrganizer> CoOrganizers
+            IReadOnlyCollection<DbProjectOrganizer> CoOrganizers,
+            bool ShowInPrintOverview,
+            string? PrintOverviewGroupName
         )
         {
             public static DbStoredProject FromReader(NpgsqlDataReader reader)
@@ -256,7 +260,9 @@ namespace TdoTGuide.Server.Common
                     !reader.IsDBNull(5) ? reader.GetString(5) : null,
                     reader.GetString(6),
                     reader.GetFieldValue<DbProjectOrganizer>(7),
-                    reader.GetFieldValue<DbProjectOrganizer[]>(8)
+                    reader.GetFieldValue<DbProjectOrganizer[]>(8),
+                    reader.GetBoolean(9),
+                    !reader.IsDBNull(10) ? reader.GetString(10) : null
                 );
             }
 
@@ -271,7 +277,9 @@ namespace TdoTGuide.Server.Common
                     Floor,
                     Location,
                     Organizer.ToDomain(),
-                    CoOrganizers.Select(v => v.ToDomain()).ToList()
+                    CoOrganizers.Select(v => v.ToDomain()).ToList(),
+                    ShowInPrintOverview,
+                    PrintOverviewGroupName
                 );
             }
         }

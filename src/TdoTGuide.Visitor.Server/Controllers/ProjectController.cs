@@ -61,7 +61,9 @@ public class ProjectController(
             project.Building,
             project.Floor,
             project.Location,
-            [.. media.Select(GetProjectMediaDtoFromDomain)]
+            [.. media.Select(GetProjectMediaDtoFromDomain)],
+            project.ShowInPrintOverview,
+            project.PrintOverviewGroupName
         );
     }
 

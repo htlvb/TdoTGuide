@@ -14,6 +14,8 @@ export namespace Dto {
     floor: string | null
     location: string
     media: ProjectMedia[]
+    showInPrintOverview: boolean,
+    printOverviewGroupName: string | null
   }
 
   export type ProjectTag = {

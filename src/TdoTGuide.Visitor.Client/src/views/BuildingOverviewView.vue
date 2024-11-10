@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Dto } from '@/Types'
-import { groupProjectsByFloor } from '@/Utils'
+import { applyPrintConfig, groupProjectsByFloor } from '@/Utils'
 
 const props = withDefaults(defineProps<{
   buildingName: string
   projects: Dto.Project[]
   zoom: number | undefined
 }>(), { zoom: 1 })
-const groupedProjects = computed(() => groupProjectsByFloor(props.projects))
+const groupedProjects = computed(() => groupProjectsByFloor(props.projects).map(([floor, projects]): [string, Dto.Project[]] => [floor, applyPrintConfig(projects)]))
 </script>
 
 <template>
@@ -17,7 +17,7 @@ const groupedProjects = computed(() => groupProjectsByFloor(props.projects))
       <div v-for="[floor, projects] in groupedProjects" :key="floor" class="p-4">
         <div class="text-xl text-center" :style="{ zoom: zoom }">{{ floor }}</div>
         <ol class="list-decimal">
-          <li v-for="project in projects" :key="project.id" class="ml-8" :style="{ zoom: zoom }">{{ project.title }}</li>
+          <li v-for="project in projects" :key="project.id" class="ml-8" :style="{ zoom: zoom }">{{ project.printOverviewGroupName || project.title }}</li>
         </ol>
       </div>
     </div>
