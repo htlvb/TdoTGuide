@@ -56,7 +56,9 @@ public static class Mapper
             !string.IsNullOrWhiteSpace(projectData.Floor) ? projectData.Floor : null,
             projectData.Location,
             organizer,
-            coOrganizers
+            coOrganizers,
+            true,
+            null
         );
         errorMessage = null;
         return true;

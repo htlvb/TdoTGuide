@@ -23,7 +23,9 @@ public static class FakeData
                 Floor: $"{v.Random.Int(-1, 2)}",
                 Location: v.Address.BuildingNumber(),
                 Organizer: organizers.First(),
-                CoOrganizers: organizers.Skip(1).ToList()
+                CoOrganizers: organizers.Skip(1).ToList(),
+                ShowInPrintOverview: v.Random.Bool(),
+                PrintOverviewGroupName: v.Random.Words().OrNull(v, 0.9f)
             );
         });
 
