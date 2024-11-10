@@ -42,12 +42,12 @@ const projectGroups = computed(() => {
     <div class="flex flex-col gap-4 p-4">
       <div class="text-center text-3xl small-caps">{{ projectGroups?.werkstaette.name }}</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.werkstaette.projects"
-        class="flex-grow flex flex-col justify-center gap-4" />
+        class="flex-grow flex flex-col gap-4" />
     </div>
     <div class="flex flex-col gap-4 p-4">
       <div class="text-center text-3xl small-caps">{{ projectGroups?.labor.name }}</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.labor.projects"
-        class="flex-grow flex flex-col justify-center gap-4" />
+        class="flex-grow flex flex-col gap-4" />
     </div>
     <div>
       <div class="flex flex-col items-center gap-4">
@@ -76,17 +76,17 @@ const projectGroups = computed(() => {
   <section class="grid grid-cols-3 page">
     <div class="flex flex-col gap-4 p-4">
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.ug"
-        class="flex-grow flex flex-col justify-center gap-4" />
+        class="flex-grow flex flex-col gap-4" />
     </div>
     <div class="flex flex-col gap-4 p-4">
       <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.eg"
-        class="flex-grow flex flex-col justify-center gap-4" />
+        class="flex-grow flex flex-col gap-4" />
       <div class="text-center text-3xl">www.htlvb.at</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.og"
-        class="flex-grow flex flex-col justify-center gap-4" />
+        class="flex-grow flex flex-col gap-4" />
     </div>
   </section>
 </template>

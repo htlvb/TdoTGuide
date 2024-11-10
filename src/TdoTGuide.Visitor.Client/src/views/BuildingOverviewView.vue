@@ -13,7 +13,8 @@ const groupedProjects = computed(() => groupProjectsByFloor(props.projects).map(
 
 <template>
   <div class="flex flex-col h-full">
-    <div class="flex-grow grid grid-flow-col auto-cols-fr items-center">
+    <div class="p-4 text-3xl text-center" :style="{ zoom: zoom }">{{ buildingName }}</div>
+    <div class="flex-grow grid grid-flow-col auto-cols-fr">
       <div v-for="[floor, projects] in groupedProjects" :key="floor" class="p-4">
         <div class="text-xl text-center" :style="{ zoom: zoom }">{{ floor }}</div>
         <ol class="list-decimal">
@@ -21,6 +22,5 @@ const groupedProjects = computed(() => groupProjectsByFloor(props.projects).map(
         </ol>
       </div>
     </div>
-    <div class="p-4 text-3xl text-center" :style="{ zoom: zoom }">{{ buildingName }}</div>
   </div>
 </template>
