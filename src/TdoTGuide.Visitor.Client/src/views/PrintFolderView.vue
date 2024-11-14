@@ -94,8 +94,12 @@ const projectGroups = computed(() => {
 </template>
 
 <style lang="css" scoped>
+@page {
+  size: 301mm 214mm;
+}
 .page {
   width: 297mm;
   height: 210mm;
+  margin: 2mm;
 }
 </style>
