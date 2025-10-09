@@ -58,8 +58,8 @@ const projectGroups = computed(() => {
           <img src="@/assets/logo.svg" width="228" height="96">
         </div>
         <div class="px-4 py-2 border border-white border-2 inline-block text-3xl leading-normal text-center small-caps">
-          <p>Gestalte deinen<br />eigenen<br />Rundgang -</p>
-          <p>Suche dir aus,<br />was dir gefällt</p>
+          <p>Mach dir dein<br />eigenes Bild</p>
+          <p>&mdash; Come &amp; See &mdash;</p>
         </div>
         <div class="text-3xl leading-normal text-center small-caps">
           <p>Jetzt geht's los</p>
