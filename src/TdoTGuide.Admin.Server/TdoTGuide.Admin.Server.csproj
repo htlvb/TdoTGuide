@@ -5,7 +5,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>TdoTGuide.Admin.Server-7C067297-85A8-46E3-AD40-D89E546C43EB</UserSecretsId>
+    <UserSecretsId>TdoTGuide</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
@@ -13,9 +13,9 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.7" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.32" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.32" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.32" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.20.0" />
     <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="2.20.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
