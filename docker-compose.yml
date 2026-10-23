@@ -14,7 +14,7 @@ services:
     ports:
       - 8081:8080
   minio:
-    image: quay.io/minio/minio
+    image: pgsty/minio
     ports:
       - 9000:9000
       - 9001:9001
