@@ -1,0 +1,105 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start dev services",
+            "type": "process",
+            "command": "docker",
+            "args": ["compose", "up", "--detach", "--wait"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "watch admin server",
+            "dependsOn": ["start dev services"],
+            "type": "process",
+            "command": "dotnet",
+            "args": ["watch", "run", "--environment", "Development"],
+            "options": {
+                "cwd": "${workspaceFolder}/src/TdoTGuide.Admin.Server"
+            },
+            "isBackground": true,
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "group": "admin-app",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "watch admin tailwind",
+            "type": "process",
+            "command": "${workspaceFolder}/.tools/tailwindcss",
+            "windows": {
+                "command": "${workspaceFolder}/.tools/tailwindcss.exe"
+            },
+            "args": [
+                "--input", "./src/TdoTGuide.Admin.Client/wwwroot/css/app.css",
+                "--output", "./src/TdoTGuide.Admin.Client/wwwroot/css/app.min.css",
+                "--watch",
+                "--poll"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "group": "admin-app",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "watch admin app",
+            "dependsOn": ["watch admin server", "watch admin tailwind"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            "label": "watch visitor server",
+            "dependsOn": ["start dev services"],
+            "type": "process",
+            "command": "dotnet",
+            "args": ["watch", "run", "--environment", "Development", "--launch-profile", "https"],
+            "options": {
+                "cwd": "${workspaceFolder}/src/TdoTGuide.Visitor.Server"
+            },
+            "isBackground": true,
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "group": "visitor-app",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "watch visitor client",
+            "type": "shell",
+            "command": "npm install && npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/src/TdoTGuide.Visitor.Client"
+            },
+            "windows": {
+                "options": {
+                    "cwd": "${workspaceFolder}/src/TdoTGuide.Visitor.Client",
+                    "shell": {
+                        "executable": "cmd.exe",
+                        "args": ["/d", "/c"]
+                    }
+                }
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "group": "visitor-app",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "watch visitor app",
+            "dependsOn": ["watch visitor server", "watch visitor client"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        }
+    ]
+}
