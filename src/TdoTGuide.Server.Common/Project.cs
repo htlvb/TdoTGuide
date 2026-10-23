@@ -11,7 +11,8 @@ public sealed record Project(
     ProjectOrganizer Organizer,
     IReadOnlyList<ProjectOrganizer> CoOrganizers,
     bool ShowInPrintOverview,
-    string? PrintOverviewGroupName
+    string? PrintOverviewGroupName,
+    bool IsDisabled
 );
 
 public interface ISelection

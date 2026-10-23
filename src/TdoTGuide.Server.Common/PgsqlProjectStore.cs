@@ -76,6 +76,19 @@ namespace TdoTGuide.Server.Common
             await UpdateProject(dbConnection, dbProject);
         }
 
+        public async Task SetDisabled(string projectId, bool isDisabled)
+        {
+            if (!Guid.TryParse(projectId, out var projectGuid))
+            {
+                return;
+            }
+            await using var dbConnection = await dataSource.OpenConnectionAsync();
+            using var cmd = new NpgsqlCommand("UPDATE project SET is_disabled=@is_disabled WHERE id=@id", dbConnection);
+            cmd.Parameters.AddWithValue("id", projectGuid);
+            cmd.Parameters.AddWithValue("is_disabled", isDisabled);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
         public async Task<List<ISelectionType>> GetProjectTypes()
         {
             await using var dbConnection = await dataSource.OpenConnectionAsync();
@@ -107,7 +120,8 @@ namespace TdoTGuide.Server.Common
                 p.organizer,
                 p.co_organizers,
                 p.show_in_print_overview,
-                p.print_overview_group_name
+                p.print_overview_group_name,
+                p.is_disabled
             FROM project p
             JOIN project_type pt on p.type->>'name' = pt.id
             """;
@@ -246,7 +260,8 @@ namespace TdoTGuide.Server.Common
             DbProjectOrganizer Organizer,
             IReadOnlyCollection<DbProjectOrganizer> CoOrganizers,
             bool ShowInPrintOverview,
-            string? PrintOverviewGroupName
+            string? PrintOverviewGroupName,
+            bool IsDisabled
         )
         {
             public static DbStoredProject FromReader(NpgsqlDataReader reader)
@@ -262,7 +277,8 @@ namespace TdoTGuide.Server.Common
                     reader.GetFieldValue<DbProjectOrganizer>(7),
                     reader.GetFieldValue<DbProjectOrganizer[]>(8),
                     reader.GetBoolean(9),
-                    !reader.IsDBNull(10) ? reader.GetString(10) : null
+                    !reader.IsDBNull(10) ? reader.GetString(10) : null,
+                    reader.GetBoolean(11)
                 );
             }
 
@@ -279,7 +295,8 @@ namespace TdoTGuide.Server.Common
                     Organizer.ToDomain(),
                     CoOrganizers.Select(v => v.ToDomain()).ToList(),
                     ShowInPrintOverview,
-                    PrintOverviewGroupName
+                    PrintOverviewGroupName,
+                    IsDisabled
                 );
             }
         }

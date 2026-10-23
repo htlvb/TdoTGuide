@@ -18,7 +18,7 @@ public class ProjectController(
             await Task.Delay(5000);
             throw new Exception("Chaos engineering exception");
         }
-        var projects = await projectStore.GetAll().ToList();
+        var projects = (await projectStore.GetAll().ToList()).Where(v => !v.IsDisabled).ToList();
         var projectTypes = await projectStore.GetProjectTypes();
         var buildings = await buildingStore.GetBuildings();
         var projectMedia = await projectMediaStore.GetAllMedia([.. projects.Select(v => v.Id)]);

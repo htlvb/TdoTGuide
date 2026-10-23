@@ -25,7 +25,8 @@ public static class FakeData
                 Organizer: organizers.First(),
                 CoOrganizers: organizers.Skip(1).ToList(),
                 ShowInPrintOverview: v.Random.Bool(),
-                PrintOverviewGroupName: v.Random.Words().OrNull(v, 0.9f)
+                PrintOverviewGroupName: v.Random.Words().OrNull(v, 0.9f),
+                IsDisabled: false
             );
         });
 

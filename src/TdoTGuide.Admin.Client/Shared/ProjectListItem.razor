@@ -5,10 +5,15 @@
 
 @if (Project != null)
 {
-    <div class="project border-l-2 border-gray-400 hover:border-main rounded shadow hover:shadow-main">
+    var projectClasses = Project.IsDisabled ? "opacity-60" : "";
+    <div class="project border-l-2 border-gray-400 hover:border-main rounded shadow hover:shadow-main @projectClasses">
         <div class="flex flex-col divide-y md:divide-y-0 divide-x-0 md:divide-x md:flex-row w-full">
             <div class="flex flex-col basis-1/5 shrink-0 p-2 gap-2">
                 <span class="text-xl text-black">@Project.Title</span>
+                @if (Project.IsDisabled)
+                {
+                    <span class="text-sm text-red-700 font-semibold">Inaktiv</span>
+                }
                 <span class="flex gap-1">
                     @foreach (var tag in Project.Tags)
                     {
@@ -66,6 +71,23 @@
                 @if (Project.Links.Edit != null)
                 {
                     <NavLink class="btn btn-blue" href=@Project.Links.Edit>Bearbeiten</NavLink>
+                }
+                @if (Project.Links.Disable != null || Project.Links.Enable != null)
+                {
+                    if (isChangingDisabledState)
+                    {
+                        <button class="btn btn-blue" disabled>
+                            <span class="spinner spinner-blue"></span>
+                        </button>
+                    }
+                    else if (Project.Links.Disable != null)
+                    {
+                        <button class="btn btn-blue" onclick=@(() => ChangeDisabledState(Project.Links.Disable))>Deaktivieren</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-blue" onclick=@(() => ChangeDisabledState(Project.Links.Enable!))>Aktivieren</button>
+                    }
                 }
                 @if (Project.Links.Delete != null)
                 {
@@ -147,6 +169,26 @@
         finally
         {
             deletionState = ConfirmableActionState.None;
+            StateHasChanged();
+        }
+    }
+
+    private bool isChangingDisabledState;
+
+    private async Task ChangeDisabledState(string url)
+    {
+        isChangingDisabledState = true;
+        StateHasChanged();
+        try
+        {
+            var response = await Http.PostAsync(url, null);
+            response.EnsureSuccessStatusCode();
+            var updatedProject = await response.Content.ReadFromJsonAsync<ProjectDto>(serializerOptions);
+            OnUpdate?.Invoke(Project!, updatedProject!);
+        }
+        finally
+        {
+            isChangingDisabledState = false;
             StateHasChanged();
         }
     }

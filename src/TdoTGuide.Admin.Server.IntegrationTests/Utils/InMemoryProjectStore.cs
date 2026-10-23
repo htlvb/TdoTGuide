@@ -44,6 +44,17 @@ public class InMemoryProjectStore : IProjectStore
         projects[index] = project;
     }
 
+    public async Task SetDisabled(string projectId, bool isDisabled)
+    {
+        await Task.Yield();
+        var index = projects.FindIndex(v => v.Id == projectId);
+        if (index == -1)
+        {
+            throw new Exception("Project cannot be updated because it doesn't exist.");
+        }
+        projects[index] = projects[index] with { IsDisabled = isDisabled };
+    }
+
     public async Task<List<ISelectionType>> GetProjectTypes()
     {
         await Task.Yield();

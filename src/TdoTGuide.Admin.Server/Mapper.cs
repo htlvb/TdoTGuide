@@ -58,7 +58,8 @@ public static class Mapper
             organizer,
             coOrganizers,
             true,
-            null
+            null,
+            false
         );
         errorMessage = null;
         return true;

@@ -96,3 +96,6 @@ ALTER TABLE project ADD COLUMN floor VARCHAR;
 -- Add settings to hide/combine-and-rename projects for print pages
 ALTER TABLE project ADD COLUMN show_in_print_overview BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE project ADD COLUMN print_overview_group_name VARCHAR;
+
+-- Allow disabling projects so that only their organizers can see them
+ALTER TABLE project ADD COLUMN is_disabled BOOLEAN NOT NULL DEFAULT false;

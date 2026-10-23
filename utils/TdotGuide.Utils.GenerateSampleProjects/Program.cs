@@ -60,7 +60,8 @@ foreach (var projectData in projects) {
         faker.PickRandom(organizers),
         faker.Random.ListItems((IList<ProjectOrganizer>)organizers, faker.Random.Number(0, 3)),
         true,
-        null);
+        null,
+        false);
     await projectStore.Create(project);
 
     using var httpClient = new HttpClient();

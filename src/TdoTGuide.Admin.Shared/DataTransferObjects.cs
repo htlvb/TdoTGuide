@@ -138,6 +138,7 @@ namespace TdoTGuide.Admin.Shared
         ProjectOrganizerDto Organizer,
         IReadOnlyList<ProjectOrganizerDto> CoOrganizers,
         UserRoleForProjectDto CurrentUserStatus,
+        bool IsDisabled,
         List<ProjectMediaDto> Media,
         ProjectLinksDto Links
     )
@@ -177,6 +178,8 @@ namespace TdoTGuide.Admin.Shared
 
     public record ProjectLinksDto(
         string? Edit,
-        string? Delete
+        string? Delete,
+        string? Disable,
+        string? Enable
     );
 }

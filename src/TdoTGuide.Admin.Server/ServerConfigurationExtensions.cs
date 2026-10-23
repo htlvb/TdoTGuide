@@ -66,6 +66,22 @@ public static class ServerConfigurationExtensions
                 });
             });
 
+            options.AddPolicy("ListDisabledProject", policy =>
+            {
+                policy.RequireAssertion(ctx =>
+                {
+                    if (ctx.User.IsInRole("Project.Write.All"))
+                    {
+                        return true;
+                    }
+                    if (ctx.Resource is Project p && (p.Organizer.Id == ctx.User.GetObjectId() || p.CoOrganizers.Any(v => v.Id == ctx.User.GetObjectId())))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+            });
+
             options.AddPolicy("ChangeProjectOrganizer", policy => policy.RequireRole("Project.Write.All"));
         });
     }

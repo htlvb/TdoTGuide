@@ -7,6 +7,7 @@
         Task Delete(string projectId);
         Task Create(Project project);
         Task Update(Project project);
+        Task SetDisabled(string projectId, bool isDisabled);
         Task<List<ISelectionType>> GetProjectTypes();
         Task<List<string>> GetFloors();
     }

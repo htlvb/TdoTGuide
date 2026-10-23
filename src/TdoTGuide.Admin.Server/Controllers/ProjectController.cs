@@ -29,6 +29,10 @@ namespace TdoTGuide.Admin.Server.Controllers
             var projectDtos = new List<ProjectDto>();
             foreach (var project in projects)
             {
+                if (project.IsDisabled && !(await authService.AuthorizeAsync(HttpContext.User, project, "ListDisabledProject")).Succeeded)
+                {
+                    continue;
+                }
                 if (!projectMedia.TryGetValue(project.Id, out var media))
                 {
                     media = [];
@@ -218,6 +222,41 @@ namespace TdoTGuide.Admin.Server.Controllers
             return Ok();
         }
 
+        [HttpPost("{projectId}/disable")]
+        public Task<IActionResult> DisableProject(string projectId)
+        {
+            return SetProjectDisabled(projectId, true);
+        }
+
+        [HttpPost("{projectId}/enable")]
+        public Task<IActionResult> EnableProject(string projectId)
+        {
+            return SetProjectDisabled(projectId, false);
+        }
+
+        private async Task<IActionResult> SetProjectDisabled(string projectId, bool isDisabled)
+        {
+            var existingProject = await projectStore.Get(projectId);
+            if (existingProject == null)
+            {
+                return NotFound("Project doesn't exist.");
+            }
+
+            if (!(await authService.AuthorizeAsync(HttpContext.User, existingProject, "UpdateProject")).Succeeded)
+            {
+                return Forbid();
+            }
+            await projectStore.SetDisabled(projectId, isDisabled);
+            var project = existingProject with { IsDisabled = isDisabled };
+            var projectMedia = await projectMediaStore.GetAllMedia([project.Id]);
+            if (!projectMedia.TryGetValue(project.Id, out var media))
+            {
+                media = [];
+            }
+            var projectTypes = await projectStore.GetProjectTypes();
+            return Ok(await GetProjectDtoFromProject(project, media, projectTypes));
+        }
+
         private static string GetUniqueFileName(string fileName)
         {
             return $"{Path.GetFileNameWithoutExtension(fileName)}-{Guid.NewGuid()}{Path.GetExtension(fileName)}";
@@ -283,10 +322,13 @@ namespace TdoTGuide.Admin.Server.Controllers
                 mapOrganizer(project.Organizer),
                 project.CoOrganizers.Select(mapOrganizer).ToArray(),
                 getCurrentUserRole(project),
+                project.IsDisabled,
                 [.. media.Select(GetProjectMediaDtoFromDomain)],
                 new ProjectLinksDto(
                     canUpdate ? $"projects/edit/{project.Id}" : default,
-                    canDelete ? Url.Action(nameof(DeleteProject), new { projectId = project.Id }) : default
+                    canDelete ? Url.Action(nameof(DeleteProject), new { projectId = project.Id }) : default,
+                    canUpdate && !project.IsDisabled ? Url.Action(nameof(DisableProject), new { projectId = project.Id }) : default,
+                    canUpdate && project.IsDisabled ? Url.Action(nameof(EnableProject), new { projectId = project.Id }) : default
                 )
             );
         }
