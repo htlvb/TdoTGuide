@@ -14,16 +14,15 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.32" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.32" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.32" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.20.0" />
-    <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="2.20.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Minio" Version="6.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Keycloak.AdminApi\Keycloak.AdminApi.csproj" />
     <ProjectReference Include="..\TdoTGuide.Admin.Client\TdoTGuide.Admin.Client.csproj" />
     <ProjectReference Include="..\TdoTGuide.Admin.Shared\TdoTGuide.Admin.Shared.csproj" />
     <ProjectReference Include="..\TdoTGuide.Server.Common\TdoTGuide.Server.Common.csproj" />

@@ -11,6 +11,7 @@ COPY ["src/TdoTGuide.Admin.Server/TdoTGuide.Admin.Server.csproj", "TdoTGuide.Adm
 COPY ["src/TdoTGuide.Admin.Shared/TdoTGuide.Admin.Shared.csproj", "TdoTGuide.Admin.Shared/"]
 COPY ["src/TdoTGuide.Admin.Client/TdoTGuide.Admin.Client.csproj", "TdoTGuide.Admin.Client/"]
 COPY ["src/TdoTGuide.Server.Common/TdoTGuide.Server.Common.csproj", "TdoTGuide.Server.Common/"]
+COPY ["src/Keycloak.AdminApi/Keycloak.AdminApi.csproj", "Keycloak.AdminApi/"]
 RUN dotnet restore "TdoTGuide.Admin.Server/TdoTGuide.Admin.Server.csproj"
 COPY src/ .
 WORKDIR "/src/TdoTGuide.Admin.Server"

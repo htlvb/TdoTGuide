@@ -11,16 +11,16 @@ public static class ServerConfigurationExtensions
             // By default, all incoming requests will be authorized according to the default policy
             //options.FallbackPolicy = options.DefaultPolicy;
 
-            options.AddPolicy("ListProjects", policy => policy.RequireRole("Project.Read"));
+            options.AddPolicy("ListProjects", policy => policy.RequireRole("project-reader"));
             options.AddPolicy("CreateProject", policy =>
             {
                 policy.RequireAssertion(ctx =>
                 {
-                    if (ctx.User.IsInRole("Project.Write.All"))
+                    if (ctx.User.IsInRole("all-projects-editor"))
                     {
                         return true;
                     }
-                    if (ctx.User.IsInRole("Project.Write"))
+                    if (ctx.User.IsInRole("project-creator"))
                     {
                         if (ctx.Resource == null)
                         {
@@ -38,11 +38,11 @@ public static class ServerConfigurationExtensions
             {
                 policy.RequireAssertion(ctx =>
                 {
-                    if (ctx.User.IsInRole("Project.Write.All"))
+                    if (ctx.User.IsInRole("all-projects-editor"))
                     {
                         return true;
                     }
-                    if (ctx.User.IsInRole("Project.Write") && ctx.Resource is Project p && p.Organizer.Id == ctx.User.GetObjectId())
+                    if (ctx.User.IsInRole("project-creator") && ctx.Resource is Project p && p.Organizer.Id == ctx.User.GetObjectId())
                     {
                         return true;
                     }
@@ -54,11 +54,11 @@ public static class ServerConfigurationExtensions
             {
                 policy.RequireAssertion(ctx =>
                 {
-                    if (ctx.User.IsInRole("Project.Write.All"))
+                    if (ctx.User.IsInRole("all-projects-editor"))
                     {
                         return true;
                     }
-                    if (ctx.User.IsInRole("Project.Write") && ctx.Resource is Project p && p.Organizer.Id == ctx.User.GetObjectId())
+                    if (ctx.User.IsInRole("project-creator") && ctx.Resource is Project p && p.Organizer.Id == ctx.User.GetObjectId())
                     {
                         return true;
                     }
@@ -70,7 +70,7 @@ public static class ServerConfigurationExtensions
             {
                 policy.RequireAssertion(ctx =>
                 {
-                    if (ctx.User.IsInRole("Project.Write.All"))
+                    if (ctx.User.IsInRole("all-projects-editor"))
                     {
                         return true;
                     }
@@ -82,7 +82,7 @@ public static class ServerConfigurationExtensions
                 });
             });
 
-            options.AddPolicy("ChangeProjectOrganizer", policy => policy.RequireRole("Project.Write.All"));
+            options.AddPolicy("ChangeProjectOrganizer", policy => policy.RequireRole("all-projects-editor"));
         });
     }
 

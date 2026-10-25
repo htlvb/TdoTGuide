@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Graph;
-using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
 using Minio;
 using System.Globalization;
+using TdoTGuide.Admin.Server;
 using TdoTGuide.Server.Common;
 
 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-AT");
@@ -14,21 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddLocalization();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
-    .EnableTokenAcquisitionToCallDownstreamApi()
-    .AddMicrosoftGraph(opts =>
+builder.Services.AddAuthentication()
+    .AddJwtBearer(options =>
     {
-        var section = builder.Configuration.GetSection("GraphBeta");
-        var scopes = section.GetSection("Scopes");
-        if (scopes != null)
-        {
-            // overwrite scopes instead of concatenating
-            opts.Scopes = [];
-        }
-        section.Bind(opts);
-    })
-    .AddInMemoryTokenCaches();
+        builder.Configuration.GetSection("Oidc").Bind(options);
+    });
+builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
 builder.Services.AddTdoTGuideControllers();
 builder.Services.AddRazorPages();
 
@@ -49,11 +39,22 @@ builder.Services.AddSingleton<IProjectStore, PgsqlProjectStore>();
 builder.Services.AddSingleton<IBuildingStore, PgsqlBuildingStore>();
 builder.Services.AddSingleton<IProjectMediaStore, MinioProjectMediaStore>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped(provider =>
+{
+    var baseUrl = builder.Configuration.GetSection("Keycloak")["BaseUrl"] ?? throw new Exception("Can't find Keycloak\\BaseUrl");
+    var accessTokenProvider = new KeycloakAccessTokenProvider(
+        new Uri(baseUrl).Host,
+        provider.GetRequiredService<IHttpContextAccessor>()
+    );
+    return new KeycloakAdminApiClientFactory(baseUrl, accessTokenProvider);
+});
 builder.Services.AddScoped<IUserStore>(provider =>
 {
-    return new UserStore(
+    return new KeycloakUserStore(
+        builder.Configuration.GetSection("Keycloak")["RealmName"] ?? throw new Exception("Can't find Keycloak\\RealmName"),
         builder.Configuration.GetSection("AppSettings")["OrganizerGroupId"] ?? throw new Exception("Can't find AppSettings\\OrganizerGroupId"),
-        provider.GetRequiredService<GraphServiceClient>());
+        provider.GetRequiredService<KeycloakAdminApiClientFactory>());
 });
 
 var app = builder.Build();

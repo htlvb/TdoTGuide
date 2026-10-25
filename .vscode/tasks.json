@@ -5,7 +5,7 @@
             "label": "start dev services",
             "type": "process",
             "command": "docker",
-            "args": ["compose", "up", "--detach", "--wait"],
+            "args": ["compose", "up"],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -13,7 +13,6 @@
         },
         {
             "label": "watch admin server",
-            "dependsOn": ["start dev services"],
             "type": "process",
             "command": "dotnet",
             "args": ["watch", "run", "--environment", "Development"],
@@ -52,13 +51,12 @@
         },
         {
             "label": "watch admin app",
-            "dependsOn": ["watch admin server", "watch admin tailwind"],
+            "dependsOn": ["start dev services", "watch admin server", "watch admin tailwind"],
             "dependsOrder": "parallel",
             "problemMatcher": []
         },
         {
             "label": "watch visitor server",
-            "dependsOn": ["start dev services"],
             "type": "process",
             "command": "dotnet",
             "args": ["watch", "run", "--environment", "Development", "--launch-profile", "https"],
@@ -97,7 +95,7 @@
         },
         {
             "label": "watch visitor app",
-            "dependsOn": ["watch visitor server", "watch visitor client"],
+            "dependsOn": ["start dev services", "watch visitor server", "watch visitor client"],
             "dependsOrder": "parallel",
             "problemMatcher": []
         }

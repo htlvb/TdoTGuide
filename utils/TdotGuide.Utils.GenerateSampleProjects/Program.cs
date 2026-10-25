@@ -28,7 +28,7 @@ var projectMediaStore = new MinioProjectMediaStore(minioClient);
 var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 var projects = JsonSerializer.Deserialize<List<ProjectData>>(File.ReadAllText("sample-projects.json"), jsonOptions) ?? throw new Exception("Can't deserialize projects.");
 var organizers = (JsonSerializer.Deserialize<List<Organizer>>(File.ReadAllText("organizer-candidates.json"), jsonOptions) ?? throw new Exception("Can't deserialize organizer candidates."))
-    .Select(v => new ProjectOrganizer(v.Id, v.GivenName, v.Surname, Regex.Replace(v.UserPrincipalName, "@.*$", "")))
+    .Select(v => new ProjectOrganizer(v.Id, v.FirstName, v.LastName, v.Username.ToUpper()))
     .ToList();
 
 var notFoundRetryPolicy = new ResiliencePipelineBuilder()
@@ -111,4 +111,4 @@ record SelectionReferenceJson(string Name, [property: JsonPropertyName("selected
     }
 }
 
-record Organizer(string Id, string GivenName, string Surname, string UserPrincipalName);
+record Organizer(string Id, string FirstName, string LastName, string Username);

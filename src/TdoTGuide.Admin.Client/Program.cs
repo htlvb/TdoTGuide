@@ -13,10 +13,9 @@ builder.Services.AddHttpClient("TdoTGuide.Admin.ServerAPI", client => client.Bas
 // Supply HttpClient instances that include access tokens when making requests to the server project
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("TdoTGuide.Admin.ServerAPI"));
 
-builder.Services.AddMsalAuthentication(options =>
+builder.Services.AddOidcAuthentication(options =>
 {
-    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration["ServerApiScope"] ?? throw new Exception("Can't find ServerApiScope config."));
+    builder.Configuration.GetSection("Oidc").Bind(options);
 });
 
 await builder.Build().RunAsync();
