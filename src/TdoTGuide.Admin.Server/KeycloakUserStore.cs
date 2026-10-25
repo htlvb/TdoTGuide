@@ -9,7 +9,7 @@ namespace TdoTGuide.Admin.Server
     {
         public async IAsyncEnumerable<ProjectOrganizer> GetOrganizerCandidates()
         {
-            var keycloakAdminApiClient = await keycloakAdminApiClientFactory.CreateClient();
+            var keycloakAdminApiClient = keycloakAdminApiClientFactory.CreateClient();
             var users = await keycloakAdminApiClient.Admin
                 .Realms[realmName]
                 .Groups[organizerGroupId]

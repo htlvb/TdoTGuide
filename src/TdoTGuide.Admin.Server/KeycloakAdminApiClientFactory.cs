@@ -5,7 +5,7 @@ using Microsoft.Kiota.Http.HttpClientLibrary;
 
 public class KeycloakAdminApiClientFactory(string baseUrl, KeycloakAccessTokenProvider accessTokenProvider)
 {
-    public async Task<KeycloakAdminApiClient> CreateClient()
+    public KeycloakAdminApiClient CreateClient()
     {
         var authProvider = new BaseBearerTokenAuthenticationProvider(accessTokenProvider);
         var adapter = new HttpClientRequestAdapter(authProvider)
