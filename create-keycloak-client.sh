@@ -25,6 +25,9 @@ CLIENT_ID=`$KCADM get clients --target-realm htlvb --fields id,clientId | jq '.[
 # Client isn't added as audience by default (see https://github.com/keycloak/keycloak/issues/12415#issuecomment-1571690295)
 # TdoT Guide instead skips audience validation
 
+ADMIN_API_SCOPE_ID=`$KCADM get client-scopes --target-realm htlvb | jq '.[] | select(.name == "kc-admin-api") | .id' --raw-output`
+$KCADM update clients/$CLIENT_ID/default-client-scopes/$ADMIN_API_SCOPE_ID --target-realm htlvb
+
 $KCADM create clients/$CLIENT_ID/roles --target-realm htlvb --set name=all-projects-editor
 $KCADM create clients/$CLIENT_ID/roles --target-realm htlvb --set name=project-creator
 $KCADM create clients/$CLIENT_ID/roles --target-realm htlvb --set name=project-reader
