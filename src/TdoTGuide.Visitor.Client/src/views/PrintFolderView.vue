@@ -50,24 +50,22 @@ const projectGroups = computed(() => {
         class="flex-grow flex flex-col gap-4" />
     </div>
     <div>
-      <div class="flex flex-col items-center gap-4">
+      <div class="flex flex-col items-center gap-8">
         <div class="text-center small-caps mt-4">
           <p class="text-4xl leading-relaxed">Tage der offenen Tür</p>
         </div>
         <div>
           <img src="@/assets/logo.svg" width="228" height="96">
         </div>
-        <div class="px-4 py-2 border border-white border-2 inline-block text-3xl leading-normal text-center small-caps">
-          <p>Mach dir dein<br />eigenes Bild</p>
-          <p>&mdash; Come &amp; See &mdash;</p>
+        <div class="w-64 px-4 py-2 border border-white border-2 inline-block text-3xl leading-normal text-center small-caps">
+          <p>Entdecken</p>
+          <p>Informieren</p>
+          <p>Orientieren</p>
         </div>
         <div class="text-3xl leading-normal text-center small-caps">
-          <p>Jetzt geht's los</p>
+          <p>Be part of it!</p>
         </div>
-        <div>
-          <img src="@/assets/qr-code.svg" width="200">
-        </div>
-        <div class="text-3xl leading-normal text-center">
+        <div class="mt-48 text-3xl leading-normal text-center">
           <p>www.htlvb.at</p>
         </div>
       </div>

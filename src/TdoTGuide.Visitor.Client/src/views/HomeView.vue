@@ -58,12 +58,13 @@ const filteredProjects = computed(() => {
         <header class="flex flex-col items-center gap-6">
           <div class="text-center small-caps mt-8 md:mt-16">
             <p class="text-3xl md:text-5xl leading-normal">Tage der offenen Tür</p>
-            <p class="text-xl md:text-3xl leading-normal">Fr. 21.11.2025 14:00 - 18:00</p>
-            <p class="text-xl md:text-3xl leading-normal">Sa. 22.11.2025 09:00 - 13:00</p>
+            <p class="text-xl md:text-3xl leading-normal">Fr. 20.11.2026 14:00 - 18:00</p>
+            <p class="text-xl md:text-3xl leading-normal">Sa. 21.11.2026 09:00 - 13:00</p>
           </div>
-          <div class="border border-white border-2 p-4 text-xl md:text-3xl leading-normal text-center small-caps">
-            <p>Mach dir dein eigenes Bild</p>
-            <p>&ndash; Come &amp; See &ndash;</p>
+          <div class="w-80 border border-white border-2 p-4 text-xl md:text-3xl leading-normal text-center small-caps">
+            <p>Entdecken</p>
+            <p>Informieren</p>
+            <p>Orientieren</p>
           </div>
           <div>
             <img src="@/assets/logo.svg" width="250" height="106">
