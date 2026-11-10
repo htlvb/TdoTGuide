@@ -81,6 +81,10 @@ const projectGroups = computed(() => {
       <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.eg"
         class="flex-grow flex flex-col gap-4" />
+      <div class="px-2 py-4 border border-white border-2 print:has-[:empty]:hidden">
+        <h3 class="text-xl text-center">Abteilungspräsentationen</h3>
+        <div class="mt-2" contenteditable></div>
+      </div>
       <div class="text-center text-3xl">www.htlvb.at</div>
     </div>
     <div class="flex flex-col gap-4 p-4">
