@@ -57,15 +57,15 @@ const projectGroups = computed(() => {
         <div>
           <img src="@/assets/logo.svg" width="228" height="96">
         </div>
-        <div class="w-64 px-4 py-2 border border-white border-2 inline-block text-3xl leading-normal text-center small-caps">
+        <div class="w-64 mt-16 px-4 py-2 border border-white border-2 inline-block text-3xl leading-normal text-center small-caps">
           <p>Entdecken</p>
           <p>Informieren</p>
           <p>Orientieren</p>
         </div>
-        <div class="text-3xl leading-normal text-center small-caps">
+        <div class="text-3xl leading-normal text-center small-caps font-bold tracking-widest">
           <p>Be part of it!</p>
         </div>
-        <div class="mt-48 text-3xl leading-normal text-center">
+        <div class="mt-32 text-3xl leading-normal text-center">
           <p>www.htlvb.at</p>
         </div>
       </div>
@@ -81,7 +81,7 @@ const projectGroups = computed(() => {
       <div class="text-center text-3xl">{{ projectGroups?.theorie.name }}</div>
       <PrintFolderProjectList v-if="projectGroups !== undefined" :projects="projectGroups.theorie.eg"
         class="flex-grow flex flex-col gap-4" />
-      <div class="px-2 py-4 border border-white border-2 print:has-[:empty]:hidden">
+      <div class="mx-4 px-2 py-4 border border-white border-2 print:has-[:empty]:hidden">
         <h3 class="text-xl text-center">Abteilungspräsentationen</h3>
         <div class="mt-2" contenteditable></div>
       </div>
