@@ -97,11 +97,11 @@ const projectGroups = computed(() => {
 
 <style lang="css" scoped>
 @page {
-  size: 301mm 214mm;
+  size: 303mm 216mm;
 }
 .page {
   width: 297mm;
   height: 210mm;
-  margin: 2mm;
+  margin: 3mm;
 }
 </style>

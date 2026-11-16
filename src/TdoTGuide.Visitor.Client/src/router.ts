@@ -8,6 +8,7 @@ const routes = [
       { path: '', component: () => import('@/views/PrintOverviewView.vue') },
       { path: 'flyer', component: () => import('@/views/PrintFlyerView.vue') },
       { path: 'folder', component: () => import('@/views/PrintFolderView.vue') },
+      { path: 'department-presentation', component: () => import('@/views/PrintDepartmentPresentationView.vue') },
       { path: 'building-overview/:buildingId?', component: () => import('@/views/BuildingsOverviewView.vue') }
     ]
   },
